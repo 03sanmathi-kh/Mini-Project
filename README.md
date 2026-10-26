@@ -1,6 +1,6 @@
 # PermitWorks
 
-PermitWorks is a presentation-ready, role-based building permit approval and inspection workflow. It follows a permit from applicant draft through document verification, assigned technical and zoning reviews, corrections, final decision, simulated payment, permit issuance, inspections and project closure.
+Getting a building permit is often a slow and confusing process, with paperwork passed from desk to desk and applicants left wondering where their request stands. PermitWorks brings the whole journey into one online system, from the first application to the final inspection. An applicant submits the details of a planned construction project, and the officers responsible for each stage check the documents, review the plans and zoning requirements, and make the final decision. Once a permit is approved, the fee is recorded, the permit is issued, and an inspector visits to confirm that the finished work meets the required standards. At every step, applicants can see the current status of their application and what happens next, so there is no need to guess or keep asking for updates. Each person who uses the system, whether an applicant, a reviewer, a finance officer or an inspector, can see and do only what their own role requires. This keeps personal information private, prevents mistakes, and leaves a clear record of who did what and when. PermitWorks was built as a student project to show how a complicated public service can be made simpler, fairer and easier to follow for everyone involved.
 
 ## Architecture and technology
 
