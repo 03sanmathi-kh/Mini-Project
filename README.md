@@ -1,6 +1,6 @@
 # PermitWorks
 
-PermitWorks is a presentation-ready, role-based building permit approval and inspection workflow. It follows a permit from applicant draft through document verification, assigned technical and zoning reviews, corrections, final decision, simulated payment, permit issuance, inspections, and project closure.
+PermitWorks is a presentation-ready, role-based building permit approval and inspection workflow. It follows a permit from applicant draft through document verification, assigned technical and zoning reviews, corrections, final decision, simulated payment, permit issuance, inspections and project closure.
 
 ## Architecture and technology
 
