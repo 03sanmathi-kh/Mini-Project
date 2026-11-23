@@ -4,8 +4,8 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/permits}
-    username: ${DB_USER:permits}
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:permitworks_db}}
+    username: ${DB_USER:postgres}
     password: ${DB_PASSWORD}
   jpa:
     open-in-view: false
@@ -21,3 +21,5 @@ app:
   admin-password: ${ADMIN_PASSWORD}
   secure-cookie: ${SECURE_COOKIE:false}
   allowed-origin: ${ALLOWED_ORIGIN:http://localhost:5173}
+
+  upload-dir: ${UPLOAD_DIR:./uploads}

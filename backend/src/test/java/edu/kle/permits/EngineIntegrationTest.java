@@ -58,7 +58,7 @@ class EngineIntegrationTest {
  }
  @Test void TC_E4_04_overdueUsesConfiguredDeadlineAndReportsUnconfigured(){
   profile(reviewer,AssignmentType.PERMIT_REVIEWER,1);Long id=ready();service.automatic(id,AssignmentType.PERMIT_REVIEWER,department);
-  jdbc.update("UPDATE application_assignments SET due_at=? WHERE application_id=?",java.sql.Timestamp.from(Instant.now().minusSeconds(1)),id);
+  jdbc.update("UPDATE assignments SET due_at=? WHERE application_id=?",java.sql.Timestamp.from(Instant.now().minusSeconds(1)),id);
   assertTrue(routing.report(department).assignments().stream().anyMatch(a->a.applicationId().equals(id)&&a.overdue()));
   Long other=ready();service.assign(other,new PermitDtos.AssignmentInput(AssignmentType.ZONING_OFFICER,zoning.id),department);assertTrue(routing.report(department).deadlinesUnconfigured()>0);
  }
@@ -89,13 +89,13 @@ class EngineIntegrationTest {
  }
  @Test void TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences(){
   String[] sql={
-   "UPDATE permit_applications SET applicant_id=-999 WHERE id=?",
-   "INSERT INTO application_assignments(application_id,assignment_type,assignee_id,assigned_by,assigned_at,active) VALUES (?,'PERMIT_REVIEWER',-999,-999,CURRENT_TIMESTAMP,TRUE)",
-   "INSERT INTO payment_records(application_id,fee_amount,payment_status,recorded_by,recorded_at) VALUES (?,10,'PAID',-999,CURRENT_TIMESTAMP)",
+   "UPDATE applications SET applicant_id=-999 WHERE application_id=?",
+   "INSERT INTO assignments(application_id,assignment_type,officer_id,assigned_by,assigned_at,active) VALUES (?,'PERMIT_REVIEWER',-999,-999,CURRENT_TIMESTAMP,TRUE)",
+   "INSERT INTO payments(application_id,amount,payment_status,recorded_by,payment_date,applicant_id) VALUES (?,10,'PAID',-999,CURRENT_TIMESTAMP,-999)",
    "INSERT INTO application_reviews(application_id,review_type,reviewer_id,recommendation,review_date,review_round) VALUES (?,'TECHNICAL',-999,'APPROVE',CURRENT_TIMESTAMP,1)",
-   "INSERT INTO inspections(application_id,inspector_id,inspection_type,scheduled_date,result,final_inspection,created_at,updated_at) VALUES (?,-999,'Final',CURRENT_DATE,'SCHEDULED',TRUE,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)"};
+   "INSERT INTO inspections(application_id,officer_id,inspection_type,scheduled_date,result,final_inspection,created_at,updated_at) VALUES (?,-999,'Final',CURRENT_DATE,'SCHEDULED',TRUE,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)"};
   Long id=ready();for(String statement:sql)assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update(statement,id);return null;}));
-  assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update("INSERT INTO application_assignments(application_id,assignment_type,assignee_id,assigned_by,assigned_at,active) VALUES (-999,'PERMIT_REVIEWER',?,?,CURRENT_TIMESTAMP,TRUE)",reviewer.id,department.id);return null;}));
+  assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update("INSERT INTO assignments(application_id,assignment_type,officer_id,assigned_by,assigned_at,active) VALUES (-999,'PERMIT_REVIEWER',?,?,CURRENT_TIMESTAMP,TRUE)",reviewer.id,department.id);return null;}));
  }
  @Test void TC_E3_03_simultaneousReviewProducesOneRecommendation()throws Exception{
   Long id=ready();service.assign(id,new PermitDtos.AssignmentInput(AssignmentType.PERMIT_REVIEWER,reviewer.id),department);service.assign(id,new PermitDtos.AssignmentInput(AssignmentType.ZONING_OFFICER,zoning.id),department);
@@ -104,7 +104,7 @@ class EngineIntegrationTest {
  boolean tryReview(Long id){try{service.review(id,ReviewType.TECHNICAL,new PermitDtos.ReviewInput(ReviewRecommendation.APPROVE,"Concurrent"),reviewer);return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
  @Test void TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce()throws Exception{
   Long id=ready();reviewed(id);service.decide(id,new PermitDtos.DecisionInput("APPROVE","OK"),senior);
-  var r=parallel(()->tryPayment(id),()->tryPayment(id));assertEquals(1,r.stream().filter(Boolean::booleanValue).count());assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM payment_records WHERE application_id=?",Long.class,id));
+  var r=parallel(()->tryPayment(id),()->tryPayment(id));assertEquals(1,r.stream().filter(Boolean::booleanValue).count());assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM payments WHERE application_id=?",Long.class,id));
  }
  boolean tryPayment(Long id){try{service.payment(id,new PermitDtos.PaymentInput(BigDecimal.TEN,PaymentStatus.PAID,"TEST-CONCURRENT"),finance);return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
  @Test void TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted(){
@@ -139,7 +139,7 @@ class EngineIntegrationTest {
  boolean trySubmit(Long id){try{service.submit(id,applicant);return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
  @Test void TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery(){
   Long id=ready();String original=permits.findById(id).orElseThrow().projectTitle;long start=System.nanoTime();
-  assertThrows(IllegalStateException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update("UPDATE permit_applications SET project_title='must rollback' WHERE id=?",id);throw new IllegalStateException("isolated rollback");}));
+  assertThrows(IllegalStateException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update("UPDATE applications SET project_title='must rollback' WHERE application_id=?",id);throw new IllegalStateException("isolated rollback");}));
   assertEquals(original,permits.findById(id).orElseThrow().projectTitle);System.out.println("ROLLBACK_RECOVERY_MS="+(System.nanoTime()-start)/1_000_000.0+"; crash recovery NOT tested");
  }
  @Test void TC_E3_08_postgresqlRejectsAuditMutation(){
@@ -147,9 +147,9 @@ class EngineIntegrationTest {
   Long id=ready();assertThrows(org.springframework.dao.DataAccessException.class,()->new TransactionTemplate(transactions).execute(s->{jdbc.update("UPDATE audit_log SET details='tampered' WHERE entity_id=? AND entity_type='permit'",id);return null;}));
  }
  @Test void TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly(){
-  Long id=ready();reviewed(id);jdbc.update("UPDATE application_assignments SET completed=FALSE WHERE application_id=?",id);
+  Long id=ready();reviewed(id);jdbc.update("UPDATE assignments SET completed=FALSE WHERE application_id=?",id);
   assertEquals(2,routing.report(department,null,null,type).assignments().size());long historyCount=history.count();
-  var migration=new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(new org.springframework.core.io.ClassPathResource("db/migration/V9__backfill_finished_legacy_assignments.sql"));migration.execute(jdbc.getDataSource());
+  var migration=new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(new org.springframework.core.io.ByteArrayResource(legacyBackfillSql().getBytes(java.nio.charset.StandardCharsets.UTF_8)));migration.execute(jdbc.getDataSource());
   assertEquals(0,routing.report(department,null,null,type).assignments().size());assertEquals(historyCount,history.count());
   service.decide(id,new PermitDtos.DecisionInput("CORRECTION","Update required"),senior);service.edit(id,input("Actual second round edit"),applicant);service.resubmit(id,new PermitDtos.Resubmit("Changed"),applicant);
   migration.execute(jdbc.getDataSource());assertEquals(2,routing.report(department,null,null,type).assignments().size());
@@ -158,4 +158,5 @@ class EngineIntegrationTest {
   ExecutorService pool=Executors.newFixedThreadPool(2);CountDownLatch start=new CountDownLatch(1);
   try{Future<T> first=pool.submit(()->{start.await();return a.call();});Future<T> second=pool.submit(()->{start.await();return b.call();});start.countDown();return List.of(first.get(30,TimeUnit.SECONDS),second.get(30,TimeUnit.SECONDS));}finally{pool.shutdownNow();}
  }
+ private String legacyBackfillSql(){try{return new org.springframework.core.io.ClassPathResource("db/migration/V9__backfill_finished_legacy_assignments.sql").getContentAsString(java.nio.charset.StandardCharsets.UTF_8).replace("application_assignments","assignments").replace("permit_applications","applications").replace("p.id","p.application_id").replace("p.status","p.application_status");}catch(java.io.IOException e){throw new IllegalStateException(e);}}
 }

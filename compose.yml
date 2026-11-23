@@ -2,26 +2,30 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: permits
-      POSTGRES_USER: permits
+      POSTGRES_DB: ${DB_NAME:-permitworks_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     ports: ["127.0.0.1:5432:5432"]
     volumes: ["permit_db:/var/lib/postgresql/data"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U permits"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-permitworks_db}"]
       interval: 5s
       timeout: 3s
       retries: 20
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
-      DB_URL: jdbc:postgresql://db:5432/permits
-      DB_USER: permits
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-permitworks_db}
+      DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      UPLOAD_DIR: /app/uploads
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       ADMIN_LOCAL_PART: ${ADMIN_LOCAL_PART:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
       ALLOWED_ORIGIN: http://localhost:5173
+    volumes: ["permit_documents:/app/uploads"]
     ports: ["127.0.0.1:8080:8080"]
     depends_on:
       db:
@@ -32,3 +36,4 @@ services:
     depends_on: [backend]
 volumes:
   permit_db:
+  permit_documents:

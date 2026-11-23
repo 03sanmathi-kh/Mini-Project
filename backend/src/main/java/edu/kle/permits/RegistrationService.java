@@ -31,7 +31,8 @@ import org.springframework.http.HttpStatus;
   identity.lock();String email=RegistrationDtos.email(input.personalEmail());identity.available(email,null,null);
   RegistrationRequest r=new RegistrationRequest();
   r.fullName=input.fullName().trim();r.personalEmail=r.activeEmail=email;r.phone=input.phone();r.requestedRole=input.requestedRole();r.description=RegistrationDtos.trim(input.description());
-  r.registrationPasswordHash=encoder.encode(input.registrationPassword());r.submittedAt=clock.instant();requests.save(r);
+  r.registrationPasswordHash=encoder.encode(input.registrationPassword());
+  r.submittedAt=clock.instant();requests.save(r);
   events.save(new SecurityEvent(null,"REGISTRATION_SUBMITTED",null));
   return new RegistrationDtos.Submitted("Registration submitted successfully. It is awaiting Admin approval. Use your personal email and registration password to check its status.");
  }
@@ -44,10 +45,11 @@ import org.springframework.http.HttpStatus;
   if(match==null)throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,INVALID_CREDENTIALS);
   return switch(match.status){
    case PENDING->new RegistrationDtos.PublicStatus(RegistrationStatus.PENDING,"Registration awaiting Admin approval.",null);
-   case APPROVED,ACTIVATED->new RegistrationDtos.PublicStatus(RegistrationStatus.APPROVED,"Registration approved. Contact Admin for your PermitWorks login credentials.",null);
+   case APPROVED,ACTIVATED->approvedStatus(match,input.registrationPassword());
    case REJECTED->new RegistrationDtos.PublicStatus(RegistrationStatus.REJECTED,"Registration rejected. Contact Admin for assistance.",match.rejectionReason);
   };
  }
+ private RegistrationDtos.PublicStatus approvedStatus(RegistrationRequest r,String registrationPassword){return new RegistrationDtos.PublicStatus(RegistrationStatus.APPROVED,"Registration approved. Contact Admin to receive your dedicated PermitWorks credentials privately.",null);}
 
  @Transactional(readOnly=true) public Page<RegistrationDtos.AdminView> list(RegistrationStatus status,int page){Pageable p=PageRequest.of(Math.max(page,0),20,Sort.by(Sort.Direction.DESC,"submittedAt"));return (status==null?requests.findAll(p):requests.findByStatus(status,p)).map(this::view);}
 
@@ -64,10 +66,11 @@ import org.springframework.http.HttpStatus;
   if(r.registrationPasswordHash!=null&&encoder.matches(input.loginPassword(),r.registrationPasswordHash))throw bad("loginPassword: Choose a login password that is different from the applicant's registration password.");
   if(users.existsByEmailIgnoreCase(loginEmail))throw new ResponseStatusException(HttpStatus.CONFLICT,"loginEmail: This PermitWorks login email is already in use.");
   AppUser user=new AppUser(r.fullName,loginEmail,null,encoder.encode(input.loginPassword()),input.approvedRole());
-  user.enabled=true;user.activationPending=false;user.locked=false;user.failedAttempts=0;
+  user.phoneNo=r.phone;user.enabled=true;user.activationPending=false;user.locked=false;user.failedAttempts=0;
   users.saveAndFlush(user);
   Instant now=clock.instant();
   r.userId=user.id;r.approvedRole=input.approvedRole();r.status=RegistrationStatus.APPROVED;r.reviewedAt=now;r.reviewedBy=actor.id;r.activationHash=null;
+  r.rejectionReason=input.adminRemarks();
   requests.saveAndFlush(r);
   audit.record(actor,"REGISTRATION_APPROVED","registration",r.id,"approvedRole="+r.approvedRole+"; user="+user.id);
   events.save(new SecurityEvent(actor.id,"USER_CREATED",user.id));events.save(new SecurityEvent(actor.id,"REGISTRATION_APPROVED",user.id));

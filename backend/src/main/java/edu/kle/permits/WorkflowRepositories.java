@@ -18,6 +18,6 @@ interface Assignments extends JpaRepository<ApplicationAssignment,Long>{
 }
 interface Reviews extends JpaRepository<ApplicationReview,Long>{List<ApplicationReview> findByApplicationIdOrderByReviewDate(Long app);boolean existsByApplicationIdAndReviewTypeAndReviewRoundAndRecommendation(Long app,ReviewType type,int round,ReviewRecommendation result);}
 interface Corrections extends JpaRepository<CorrectionRequest,Long>{List<CorrectionRequest> findByApplicationIdOrderByRequestedAt(Long app);List<CorrectionRequest> findByApplicationIdAndResolvedFalse(Long app);}
-interface Payments extends JpaRepository<PaymentRecord,Long>{Optional<PaymentRecord> findByApplicationId(Long app);}
+interface Payments extends JpaRepository<PaymentRecord,Long>{Optional<PaymentRecord> findFirstByApplicationIdOrderByRecordedAtDescIdDesc(Long app);List<PaymentRecord> findByApplicationIdOrderByRecordedAtAscIdAsc(Long app);default Optional<PaymentRecord> findByApplicationId(Long app){return findFirstByApplicationIdOrderByRecordedAtDescIdDesc(app);}}
 interface Inspections extends JpaRepository<InspectionRecord,Long>{List<InspectionRecord> findByApplicationIdOrderByCreatedAt(Long app);Optional<InspectionRecord> findByIdAndInspectorId(Long id,Long inspector);}
 interface WorkflowHistories extends JpaRepository<WorkflowHistory,Long>{List<WorkflowHistory> findByApplicationIdOrderByOccurredAt(Long app);}

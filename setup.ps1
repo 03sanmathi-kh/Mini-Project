@@ -14,4 +14,4 @@ if (!(Test-Path '.env')) {
     Write-Host 'Created local configuration.'
 }
 Write-Host 'Initial Admin credentials (used only when the database is empty):'
-Get-Content '.env' | Where-Object { $_ -match '^ADMIN_(LOCAL_PART|PASSWORD)=' } | ForEach-Object { Write-Host $_ }
+Write-Host 'Read your initial Admin credentials privately from the ignored .env file. They are not printed.'

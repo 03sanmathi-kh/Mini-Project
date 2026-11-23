@@ -28,3 +28,9 @@ backups/
 FINAL_GATE3_DELIVERABLES/private-build/
 reference_data/*.sqlite*
 review_evidence/git/preexisting-changes.patch
+
+backend/target-reg/
+backend/target-modern/
+backend/target-modern-pg/
+uploads/
+backend/uploads/

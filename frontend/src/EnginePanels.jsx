@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import {api,message} from './api';
-import {Alert,Panel,EmptyState,formatDate,pretty} from './ui';
+import {Alert,DataItem,Panel,EmptyState,formatDate,pretty} from './ui';
 
 export function Notifications(){
  const [items,setItems]=useState(null),[error,setError]=useState('');
@@ -33,7 +33,7 @@ export function Workload(){
 
 export function ReferenceAnalytics(){
  const [data,setData]=useState(null),[error,setError]=useState('');useEffect(()=>{api.get('/reference/analytics').then(r=>setData(r.data)).catch(e=>setError(message(e)))},[]);
- return <section className="page"><h1>Reference analytics</h1><Alert>{error}</Alert>{data?<><p>{data.provenance}</p><Panel title="CSV validation"><table><thead><tr><th>Source</th><th>Total</th><th>Imported to staging</th><th>Rejected</th><th>Quarantined</th></tr></thead><tbody>{Object.entries(data.counts).map(([name,c])=><tr key={name}><td>{name}</td><td>{c.total}</td><td>{c.imported}</td><td>{c.rejected}</td><td>{c.quarantined}</td></tr>)}</tbody></table><p>Reference records are separate from operational accounts, permits and document files.</p></Panel>{Object.entries(data.analytics).map(([name,groups])=><Panel key={name} title={name}><dl className="data-grid">{Object.entries(groups).map(([k,v])=><div key={k}><dt>{pretty(k)}</dt><dd>{v}</dd></div>)}</dl></Panel>)}</>:!error?<p>Loading reference analytics...</p>:null}</section>
+ return <section className="page"><h1>Database analytics</h1><Alert>{error}</Alert>{data?<><p>{data.source}</p><Panel title="Persisted records"><table><thead><tr><th>Table</th><th>Records</th></tr></thead><tbody>{Object.entries(data.tables).map(([name,count])=><tr key={name}><td>{name}</td><td>{count}</td></tr>)}</tbody></table></Panel>{['applicationStates','registrationStates','paymentStates'].map(name=><Panel key={name} title={pretty(name.replace(/([A-Z])/g,' $1'))}>{Object.keys(data[name]).length?<dl className="data-grid">{Object.entries(data[name]).map(([state,count])=><DataItem key={state} label={pretty(state)} value={String(count)}/>)}</dl>:<EmptyState text="No records yet."/>}</Panel>)}</>:!error?<p>Loading database analytics...</p>:null}</section>
 }
 
 export function AuditHistory(){

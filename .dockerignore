@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+uploads
+**/uploads
+backups
+**/target*
+**/node_modules
+**/.idea
+.m2
+.test-m2
+backend/.test-m2
+FINAL_GATE3_DELIVERABLES
+review_evidence
+**/__pycache__

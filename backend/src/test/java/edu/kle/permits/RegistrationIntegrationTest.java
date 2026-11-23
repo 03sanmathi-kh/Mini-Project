@@ -43,7 +43,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
  Long submit(String email,String role)throws Exception{mvc.perform(postJson("/api/registrations",input(email,role),ip())).andExpect(status().isCreated()).andExpect(jsonPath("$.trackingCode").doesNotExist()).andExpect(jsonPath("$.activationSecret").doesNotExist());return requests.findByPersonalEmailOrderBySubmittedAtDesc(email.trim().toLowerCase(Locale.ROOT)).get(0).id;}
  Cookie login(String email,String password)throws Exception{return mvc.perform(postJson("/api/auth/login",Map.of("email",email,"password",password),ip())).andExpect(status().isOk()).andReturn().getResponse().getCookie("PERMIT_TOKEN");}
  Cookie adminToken()throws Exception{return login(admin.email,"InitialAdminPassword!");}
- Map<String,Object> approval(String role,String login,String password){return new HashMap<>(Map.of("approvedRole",role,"loginEmail",login,"loginPassword",password,"confirmLoginPassword",password,"confirm",true));}
+ Map<String,Object> approval(String role,String login,String password){return new HashMap<>(Map.of("approvedRole",role,"loginEmail",login,"loginPassword",password,"confirmLoginPassword",password,"confirm",true,"adminRemarks","Approved verification remarks"));}
  ResultActions checkStatus(String email,String password)throws Exception{return mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",email,"registrationPassword",password),ip()));}
 
  @Test void T01_T02_T07_validRegistrationWithTenDigitPhoneIsPendingWithoutAccount()throws Exception{
@@ -96,8 +96,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
   AppUser u=users.findById(r.userId).orElseThrow();assertEquals(login,u.email);assertEquals(Role.PERMIT_REVIEWER,u.role);assertTrue(u.enabled);assertFalse(u.activationPending);assertNull(u.personalContactEmail);
   assertTrue(u.passwordHash.startsWith("$2"));assertTrue(encoder.matches(LOGIN_PASSWORD,u.passwordHash));assertFalse(encoder.matches(REG_PASSWORD,u.passwordHash));assertNotEquals(r.registrationPasswordHash,u.passwordHash);
   assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE entity_type='registration' AND entity_id=? AND action='REGISTRATION_APPROVED'",Long.class,id));
-  checkStatus(personal,REG_PASSWORD).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("APPROVED")).andExpect(jsonPath("$.message").value("Registration approved. Contact Admin for your PermitWorks login credentials.")).andExpect(jsonPath("$.loginEmail").doesNotExist());
-  String statusBody=checkStatus(personal,REG_PASSWORD).andReturn().getResponse().getContentAsString();assertFalse(statusBody.contains(login));
+  checkStatus(personal,REG_PASSWORD).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("APPROVED")).andExpect(jsonPath("$.loginEmail").doesNotExist()).andExpect(jsonPath("$.loginPassword").doesNotExist());
+  checkStatus(personal,"Wrong#Pass2026").andExpect(status().isUnauthorized()).andExpect(jsonPath("$.loginPassword").doesNotExist());
+  RegistrationRequest sealed=requests.findById(id).orElseThrow();assertNull(sealed.sealedLoginPassword);
+  for(String col:List.of("credential_public_key","credential_private_key_enc","sealed_login_password","registration_password_hash"))assertFalse(String.valueOf(jdbc.queryForObject("SELECT "+col+" FROM registration_requests WHERE registration_id=?",String.class,id)).contains(LOGIN_PASSWORD));
+  assertNull(sealed.credentialPrivateKeyEnc);
   Cookie token=login(login,LOGIN_PASSWORD);
   mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("PERMIT_REVIEWER")).andExpect(jsonPath("$.email").value(login));
   mvc.perform(get("/api/permits/dashboard").cookie(token)).andExpect(status().isOk());
@@ -132,11 +135,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
  }
  @Test void T22_T23_existingAdminUsersPermitsAndSupportUnchanged()throws Exception{
   String hash=users.findById(member.id).orElseThrow().passwordHash,adminHash=users.findById(admin.id).orElseThrow().passwordHash;
-  long permits=jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class),history=jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class),support=jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class);
+  long permits=jdbc.queryForObject("SELECT count(*) FROM applications",Long.class),history=jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class),support=jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class);
   Long id=submit(email(),"APPLICANT");service.approve(id,new RegistrationDtos.Approve(Role.APPLICANT,loginEmail(),LOGIN_PASSWORD,LOGIN_PASSWORD,true),admin);
   Long rejected=submit(email(),"APPLICANT");service.reject(rejected,new RegistrationDtos.Reject("Isolated rejected fixture",true),admin);
   assertEquals(hash,users.findById(member.id).orElseThrow().passwordHash);assertEquals(adminHash,users.findById(admin.id).orElseThrow().passwordHash);
-  assertEquals(permits,jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class));assertEquals(history,jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class));assertEquals(support,jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class));
+  assertEquals(permits,jdbc.queryForObject("SELECT count(*) FROM applications",Long.class));assertEquals(history,jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class));assertEquals(support,jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class));
   mvc.perform(get("/api/auth/me").cookie(adminToken())).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
   mvc.perform(get("/api/auth/me").cookie(login(member.email,MEMBER_PASSWORD))).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("APPLICANT"));
  }

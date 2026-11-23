@@ -2,12 +2,14 @@ package edu.kle.permits;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+@EntityListeners(ApprovedIdentityListener.class)
 @Entity @Table(name="app_users")
 public class AppUser {
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY) public Long id;
  @Column(nullable=false) public String fullName;
  @Column(nullable=false,unique=true) public String email;
  public String personalContactEmail;
+ public String phoneNo;public String address;
  @Column(nullable=false) public String passwordHash;
  @Enumerated(EnumType.STRING) @Column(nullable=false) public Role role;
  public boolean enabled=true;

@@ -24,9 +24,10 @@ import java.time.*;
  public Long actorId; public String action; public LocalDate eventDate; public Instant occurredAt;
  public String entityType; public Long entityId; @Column(length=2000) public String details;
 }
-@Entity @Table(name="document_versions") class DocumentVersion {
- @Id @GeneratedValue(strategy=GenerationType.IDENTITY) public Long id;
- public Long applicationId; public String documentName; public int versionNo; public String contentType;
- public String contentHash; public long contentSize; @Column(columnDefinition="text") public String contentBase64;
- public Long uploadedBy; public Instant uploadedAt;
+@Entity @Table(name="documents") class DocumentVersion {
+ @Id @GeneratedValue(strategy=GenerationType.IDENTITY) public @Column(name="document_id") Long id;
+ public Long applicationId; public String documentName; public int versionNo; @Column(name="mime_type")public String contentType;
+ public String contentHash; @Column(name="file_size")public long contentSize; @Column(columnDefinition="text") public String contentBase64;
+ @Column(name="applicant_id")public Long uploadedBy; @Column(name="upload_date")public Instant uploadedAt;
+ @Column(insertable=false,updatable=false) public String filePath;
 }
