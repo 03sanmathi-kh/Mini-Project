@@ -28,7 +28,7 @@ class SecurityIntegrationTest {
  @Autowired MockMvc mvc; @Autowired Users users; @Autowired PasswordEncoder encoder;
  @Autowired Sessions sessions; @Autowired JwtDecoder decoder; @Autowired AuthService service;
  @MockitoBean Clock clock;
- final Instant now=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
+ final Instant now=Instant.parse("2026-11-23T10:00:00Z");
  AppUser admin, applicant;
  @BeforeEach void setup(){
   when(clock.instant()).thenReturn(now);
@@ -48,16 +48,17 @@ class SecurityIntegrationTest {
  String json(String email,String password){return "{\"email\":\""+email+"\",\"password\":\""+password+"\"}";}
  Cookie login(String email,String password)throws Exception{
   MvcResult r=mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json(email,password))).andExpect(status().isOk()).andReturn();
-  Cookie c=r.getResponse().getCookie("PERMIT_TOKEN");assertNotNull(c);assertTrue(c.isHttpOnly());return c;
+  Cookie c=r.getResponse().getCookie("PERMIT_TOKEN");assertNotNull(c);assertTrue(c.isHttpOnly());assertEquals(AuthSession.ABSOLUTE_TIMEOUT_SECONDS,c.getMaxAge());assertEquals(now.plusSeconds(AuthSession.ABSOLUTE_TIMEOUT_SECONDS),decoder.decode(c.getValue()).getExpiresAt());return c;
  }
  @Test void protectedEndpointsRequireAuthenticationAndCsrf()throws Exception{
   mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
   mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(json("admin@permitworks.com","InitialAdminPassword!"))).andExpect(status().isForbidden());
  }
  @Test void locksOnFifthFailureAndOnlyAdminCanUnlock()throws Exception{
-  for(int i=0;i<5;i++)mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","wrongpass"))).andExpect(status().isUnauthorized());
+  for(int i=0;i<4;i++)mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","wrongpass"))).andExpect(status().isUnauthorized());
+  mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","wrongpass"))).andExpect(status().isLocked());
   assertTrue(users.findById(applicant.id).orElseThrow().locked);
-  mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","ApplicantPassword!"))).andExpect(status().isUnauthorized());
+  mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","ApplicantPassword!"))).andExpect(status().isLocked());
   Cookie token=login("admin@permitworks.com","InitialAdminPassword!");
   mvc.perform(post("/api/admin/users/"+applicant.id+"/unlock").cookie(token).with(browserCsrf())).andExpect(status().isOk());
   assertEquals(0,users.findById(applicant.id).orElseThrow().failedAttempts);
@@ -71,30 +72,44 @@ class SecurityIntegrationTest {
  }
  @Test void logoutRevokesToken()throws Exception{
   Cookie token=login("applicant@permitworks.com","ApplicantPassword!");
-  mvc.perform(post("/api/auth/logout").cookie(token).with(browserCsrf())).andExpect(status().isOk());
+  MvcResult logout=mvc.perform(post("/api/auth/logout").cookie(token).with(browserCsrf())).andExpect(status().isOk()).andReturn();
+  assertEquals(0,logout.getResponse().getCookie("PERMIT_TOKEN").getMaxAge());
   mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isUnauthorized());
  }
- @Test void idleTimeoutUsesServerActivityAndPollingDoesNotExtendIt()throws Exception{
-  Cookie token=login("applicant@permitworks.com","ApplicantPassword!");
-  when(clock.instant()).thenReturn(now.plusSeconds(1799));
+ @Test void idleExpiryBoundaryAndPollingDoNotExtendSession()throws Exception{
+  Cookie token=login("admin@permitworks.com","InitialAdminPassword!");
+  when(clock.instant()).thenReturn(now.plusSeconds(29*60));
   mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk());
-  when(clock.instant()).thenReturn(now.plusSeconds(1800));
+  when(clock.instant()).thenReturn(now.plusSeconds(30*60));
+  mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isUnauthorized());
+  when(clock.instant()).thenReturn(now.plusSeconds(31*60));
   mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isUnauthorized());
  }
- @Test void explicitActivityExtendsIdleWindowButNotAbsoluteLifetime()throws Exception{
-  Cookie token=login("applicant@permitworks.com","ApplicantPassword!");
-  when(clock.instant()).thenReturn(now.plusSeconds(1200));
-  mvc.perform(post("/api/auth/activity").cookie(token).with(browserCsrf())).andExpect(status().isOk());
-  when(clock.instant()).thenReturn(now.plusSeconds(2400));
-  mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk());
-  when(clock.instant()).thenReturn(now.plusSeconds(28800));
+ @Test void explicitActivityExtendsIdleButNotAbsoluteLifetime()throws Exception{
+  Cookie token=login("admin@permitworks.com","InitialAdminPassword!");
+  for(int minutes=20;minutes<480;minutes+=20){
+   when(clock.instant()).thenReturn(now.plusSeconds(minutes*60));
+   mvc.perform(post("/api/auth/activity").cookie(token).with(browserCsrf())).andExpect(status().isOk());
+  }
+  when(clock.instant()).thenReturn(now.plusSeconds(480*60));
   mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isUnauthorized());
+ }
+ @Test void shortIncorrectPasswordIsUnauthorizedAndCountsTowardLockout()throws Exception{
+  mvc.perform(post("/api/auth/login").with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(json("applicant@permitworks.com","bad"))).andExpect(status().isUnauthorized());
+  assertEquals(1,users.findById(applicant.id).orElseThrow().failedAttempts);
+ }
+ @Test void adminLoginPersistsCompleteEightHourSessionAndRemainsAuthenticated()throws Exception{
+  Cookie token=login("admin@permitworks.com","InitialAdminPassword!");
+  AuthSession session=sessions.findAll().stream().filter(s->s.userId.equals(admin.id)).max(Comparator.comparing(s->s.createdAt)).orElseThrow();
+  assertNotNull(session.createdAt);assertNotNull(session.expiresAt);assertEquals(now,session.createdAt);assertEquals(now.plusSeconds(AuthSession.ABSOLUTE_TIMEOUT_SECONDS),session.expiresAt);
+  mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
  }
  @Test void adminCreationValidationAndRoleChanges()throws Exception{
   Cookie adminToken=login("admin@permitworks.com","InitialAdminPassword!");
   String body="{\"fullName\":\"New User\",\"localPart\":\"New-User\",\"personalContactEmail\":\"New.User@Example.COM\",\"password\":\"LongEnoughPassword!\",\"role\":\"APPLICANT\"}";
   // Unique per test database; this test runs once.
   mvc.perform(post("/api/admin/users").cookie(adminToken).with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+  mvc.perform(get("/api/auth/me").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
   AppUser created=users.findByEmail("new-user@permitworks.com").orElseThrow();
   assertNotEquals("LongEnoughPassword!",created.passwordHash);assertTrue(encoder.matches("LongEnoughPassword!",created.passwordHash));assertEquals("new.user@example.com",created.personalContactEmail);
   mvc.perform(post("/api/admin/users").cookie(adminToken).with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isConflict());
@@ -102,6 +117,9 @@ class SecurityIntegrationTest {
   Cookie applicantToken=login("applicant@permitworks.com","ApplicantPassword!");
   mvc.perform(patch("/api/admin/users/"+applicant.id).cookie(adminToken).with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Changed\",\"role\":\"FINANCE_OFFICER\",\"enabled\":true}")).andExpect(status().isOk());
   mvc.perform(get("/api/auth/me").cookie(applicantToken)).andExpect(status().isUnauthorized());
+  mvc.perform(get("/api/auth/me").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
+  mvc.perform(post("/api/admin/users/"+applicant.id+"/unlock").cookie(adminToken).with(browserCsrf())).andExpect(status().isOk());
+  mvc.perform(get("/api/auth/me").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
  }
 
  @Test void passwordByteLimitsAndExistingHashesRemainStable()throws Exception{
@@ -141,6 +159,7 @@ class SecurityIntegrationTest {
   Cookie a=login("admin@permitworks.com","InitialAdminPassword!"),u=login("applicant@permitworks.com","ApplicantPassword!");
   mvc.perform(patch("/api/admin/users/"+applicant.id).cookie(a).with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Applicant Test\",\"role\":\"APPLICANT\",\"enabled\":false}")).andExpect(status().isOk());
   mvc.perform(get("/api/auth/me").cookie(u)).andExpect(status().isUnauthorized());
+  mvc.perform(get("/api/auth/me").cookie(a)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
   mvc.perform(patch("/api/admin/users/"+admin.id).cookie(a).with(browserCsrf()).contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Admin\",\"role\":\"ADMIN\",\"enabled\":false}")).andExpect(status().isBadRequest());
  }
 }

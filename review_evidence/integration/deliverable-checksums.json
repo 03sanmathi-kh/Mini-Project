@@ -1,0 +1,18 @@
+{
+  "backend/target-review/permit-engine1-1.0.0.jar": {
+    "bytes": 63166327,
+    "sha256": "89f7566da778332ab2088a27d53177086086a716550e6937918cfec82b3ac27b"
+  },
+  "review_evidence/documents/SPRINT2_STUDENT_HANDBOOK_UPDATED.docx": {
+    "bytes": 49657,
+    "sha256": "a2fcc93fcfe4359246d3e899de6fca7e01104a1eae3a9ec0293b14603a6c2f41"
+  },
+  "review_evidence/documents/SPRINT2_REVIEW_PRESENTATION_v9.pptx": {
+    "bytes": 100786,
+    "sha256": "5fea02f0e5d94896fbac32bc90295272208dc1e2b92e0cf36c28492dd26243bd"
+  },
+  "reference_data/summary.json": {
+    "bytes": 3481,
+    "sha256": "b0f3befc0efbea03b78f89ab7f634d93156d8b2dd53f4d9099fe28901c40e6eb"
+  }
+}

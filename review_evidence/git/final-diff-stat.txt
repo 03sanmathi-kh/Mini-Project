@@ -1,0 +1,25 @@
+ .gitignore                                         | 13 ++++++
+ INTEGRATION.md                                     |  6 +--
+ README.md                                          | 47 +++++++++++++++++---
+ VALIDATION.md                                      | 25 +++++------
+ backend/pom.xml                                    |  4 +-
+ .../src/main/java/edu/kle/permits/ApiErrors.java   |  1 +
+ .../main/java/edu/kle/permits/AuthController.java  |  6 +--
+ .../src/main/java/edu/kle/permits/AuthService.java |  9 ++--
+ .../src/main/java/edu/kle/permits/AuthSession.java |  6 ++-
+ backend/src/main/java/edu/kle/permits/Dtos.java    |  2 +-
+ .../src/main/java/edu/kle/permits/PermitDtos.java  |  8 ++--
+ .../main/java/edu/kle/permits/PermitService.java   | 35 +++++++++++----
+ .../main/java/edu/kle/permits/SecurityConfig.java  |  2 +-
+ .../main/java/edu/kle/permits/SessionFilter.java   | 11 +++--
+ .../main/java/edu/kle/permits/SupportRequests.java |  9 ++--
+ .../main/java/edu/kle/permits/SupportService.java  | 23 +++++++++-
+ .../java/edu/kle/permits/WorkflowEntities.java     | 12 ++---
+ backend/src/main/resources/application.yml         |  4 ++
+ .../edu/kle/permits/SecurityIntegrationTest.java   | 51 +++++++++++++++-------
+ .../edu/kle/permits/SupportIntegrationTest.java    | 18 ++++++++
+ frontend/src/Permit.jsx                            | 22 +++++-----
+ frontend/src/api.js                                |  6 +--
+ frontend/src/main.jsx                              | 11 ++---
+ frontend/src/style.css                             |  8 ++++
+ 24 files changed, 244 insertions(+), 95 deletions(-)

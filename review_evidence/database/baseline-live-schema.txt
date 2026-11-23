@@ -1,0 +1,41 @@
+ current_database | current_user |                                 version                                  
+------------------+--------------+--------------------------------------------------------------------------
+ permits          | postgres     | PostgreSQL 17.11 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit
+(1 row)
+
+       table_name        
+-------------------------
+ app_users
+ application_assignments
+ application_reviews
+ application_versions
+ auth_sessions
+ correction_requests
+ flyway_schema_history
+ inspections
+ payment_records
+ permit_applications
+ security_events
+ support_requests
+ workflow_history
+(13 rows)
+
+ installed_rank | version |             description             | success 
+----------------+---------+-------------------------------------+---------
+              1 | 1       | security                            | t
+              2 | 2       | permitworks email                   | t
+              3 | 3       | permit workflow                     | t
+              4 | 4       | personal email and support          | t
+              5 | 5       | make session last activity optional | t
+(5 rows)
+
+ users 
+-------
+     8
+(1 row)
+
+ permits 
+---------
+       2
+(1 row)
+

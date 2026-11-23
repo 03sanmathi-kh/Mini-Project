@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=path.resolve(import.meta.dirname,'..');
+const skill='C:/Users/thele/.codex/plugins/cache/openai-primary-runtime/presentations/26.1119.11507/skills/presentations';
+const runtime='C:/Program Files/WindowsApps/OpenAI.CodexPrimaryRuntime.v26-1119-907-0_26.1119.907.0_x64__3k8sg7r9htsxt/dependencies';
+process.env.RUNTIME_NODE_MODULES=runtime+'/node/node_modules';
+const {finalizePresentation}=await import(pathToFileURL(skill+'/container_tools/artifact_tool_utils.mjs').href);
+const draft=path.join(root,'review_evidence/documents/deck-build/candidate-v9.pptx');
+const final=path.join(root,'review_evidence/documents/SPRINT2_REVIEW_PRESENTATION_v9.pptx');
+const result=await finalizePresentation({workspaceDir:root,candidatePath:draft,finalPath:final,pythonExecutable:runtime+'/python/python.exe',integrityValidatorPath:skill+'/container_tools/inspect_presentation_package_integrity.py',layoutValidatorPath:skill+'/container_tools/inspect_presentation_layout_geometry.py',layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit'],explicitTotalSlideCount:21,requiredNativeTableOwnerSlides:[],requiredNativeChartOwnerSlides:[],fontPolicy:{basis:'design',families:['Arial']},verifyArtifactToolImport:true,receiptPath:path.join(root,'review_evidence/integration/deck-validation-v9.json')});
+console.log(JSON.stringify(result));

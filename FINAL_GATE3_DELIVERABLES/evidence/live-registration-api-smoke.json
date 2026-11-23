@@ -1,0 +1,62 @@
+[
+  {
+    "check": "Admin login with existing trusted configuration",
+    "status": 200
+  },
+  {
+    "endpoint": "/admin/registrations",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "/auth/me",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "/permits/dashboard",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "/reports/workload",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "/routing/profiles",
+    "status": 200,
+    "shape": "array",
+    "count": 0
+  },
+  {
+    "endpoint": "/notifications",
+    "status": 200,
+    "shape": "array",
+    "count": 0
+  },
+  {
+    "endpoint": "/audit",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "/reference/analytics",
+    "status": 200,
+    "shape": "object",
+    "count": null
+  },
+  {
+    "endpoint": "POST /auth/activity",
+    "status": 200
+  },
+  {
+    "check": "Logout revocation",
+    "status": 401
+  }
+]

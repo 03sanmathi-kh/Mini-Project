@@ -1,0 +1,9 @@
+{
+  "app_users": "PASS",
+  "permit_applications": "PASS",
+  "workflow_history": "PASS",
+  "audit_log": "PASS",
+  "support_requests": "PASS",
+  "application_assignments": "PASS",
+  "application_reviews": "PASS"
+}

@@ -1,0 +1,15 @@
+ M README.md
+ M backend/src/main/java/edu/kle/permits/AuthController.java
+ M backend/src/main/java/edu/kle/permits/AuthService.java
+ M backend/src/main/java/edu/kle/permits/AuthSession.java
+ M backend/src/main/java/edu/kle/permits/PermitApplication.java
+ M backend/src/main/java/edu/kle/permits/SessionFilter.java
+ M backend/src/main/java/edu/kle/permits/SupportRequests.java
+ M backend/src/main/java/edu/kle/permits/SupportService.java
+ M backend/src/test/java/edu/kle/permits/SecurityIntegrationTest.java
+ M backend/src/test/java/edu/kle/permits/SupportIntegrationTest.java
+ M frontend/src/api.js
+ M frontend/src/main.jsx
+ M frontend/src/style.css
+?? backend/.idea/vcs.xml
+?? backend/src/main/resources/db/migration/V5__make_session_last_activity_optional.sql

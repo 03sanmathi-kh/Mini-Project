@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Single Register button preserves original location and dimensions",
+    "Escape closes dialog and restores focus",
+    "Admin explicitly approves APPLICANT despite requested ADMIN",
+    "Private activation prefills assigned login; existing login works; APPLICANT receives Admin 403",
+    "Admin rejection and user-visible reason work through verified lookup",
+    "Secondary Help and Support opens original support workflow",
+    "390px mobile layout has no horizontal overflow"
+  ],
+  "button": {
+    "x": 1210.53125,
+    "y": 685.796875,
+    "width": 82.453125,
+    "height": 38
+  },
+  "screenshots": 12
+}

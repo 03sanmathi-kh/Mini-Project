@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.time.*;
 import java.util.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,27 @@ public class SupportService {
   SupportRequest s=requests.findByTicketNumberAndPersonalContactEmailIgnoreCase(ticket,email).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"The ticket details could not be found."));
   return new SupportDtos.PublicStatus(s.ticketNumber,s.category,s.status,s.createdAt,s.updatedAt,s.userVisibleResponse);
  }
- @Transactional(readOnly=true) public Page<SupportDtos.Summary> list(String query,SupportStatus status,SupportCategory category,int page){return requests.search(blank(query),status,category,PageRequest.of(Math.max(page,0),20)).map(this::summary);}
+ @Transactional(readOnly=true) public Page<SupportDtos.Summary> list(String query,SupportStatus status,SupportCategory category,int page){
+  String normalized=blank(query);if(normalized!=null)normalized=normalized.toLowerCase(Locale.ROOT);
+  final String search=normalized;
+  Specification<SupportRequest> spec=(root,criteria,cb)->{
+   List<jakarta.persistence.criteria.Predicate> predicates=new ArrayList<>();
+   if(status!=null)predicates.add(cb.equal(root.get("status"),status));
+   if(category!=null)predicates.add(cb.equal(root.get("category"),category));
+   if(search!=null){
+    String pattern="%"+search+"%";
+    predicates.add(cb.or(
+     cb.like(cb.lower(root.<String>get("ticketNumber")),pattern),
+     cb.like(cb.lower(root.<String>get("requesterName")),pattern),
+     cb.like(cb.lower(root.<String>get("personalContactEmail")),pattern),
+     cb.like(cb.lower(root.<String>get("permitworksEmail")),pattern)
+    ));
+   }
+   return cb.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
+  };
+  Pageable pageable=PageRequest.of(Math.max(page,0),20,Sort.by(Sort.Direction.DESC,"createdAt"));
+  return requests.findAll(spec,pageable).map(this::summary);
+ }
  @Transactional(readOnly=true) public long openCount(){return requests.countByStatusIn(List.of(SupportStatus.OPEN,SupportStatus.IN_PROGRESS));}
  @Transactional(readOnly=true) public SupportDtos.AdminView get(Long id){return adminView(request(id));}
  @Transactional public SupportDtos.AdminView update(Long id,SupportDtos.Update input,Long actor){

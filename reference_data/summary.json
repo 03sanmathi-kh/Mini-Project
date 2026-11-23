@@ -1,0 +1,131 @@
+{
+  "archiveSha256": "d0547b53196163ff9039ef9fc1fee05df7183a3eb2772c130f0e33dc84cd996f",
+  "provenance": "Unverified supplied reference archive; not certified official Chicago data",
+  "operationalImport": false,
+  "credentialImport": false,
+  "counts": {
+    "User": {
+      "total": 4000,
+      "imported": 4000,
+      "rejected": 0,
+      "quarantined": 0
+    },
+    "Officer": {
+      "total": 4000,
+      "imported": 3209,
+      "rejected": 0,
+      "quarantined": 791
+    },
+    "Property": {
+      "total": 4000,
+      "imported": 4000,
+      "rejected": 0,
+      "quarantined": 0
+    },
+    "Application": {
+      "total": 4000,
+      "imported": 4000,
+      "rejected": 0,
+      "quarantined": 0
+    },
+    "Document": {
+      "total": 4000,
+      "imported": 4000,
+      "rejected": 0,
+      "quarantined": 0
+    },
+    "Assignment": {
+      "total": 4000,
+      "imported": 3209,
+      "rejected": 0,
+      "quarantined": 791
+    },
+    "Correction": {
+      "total": 4000,
+      "imported": 3209,
+      "rejected": 0,
+      "quarantined": 791
+    },
+    "Payment": {
+      "total": 4000,
+      "imported": 4000,
+      "rejected": 0,
+      "quarantined": 0
+    },
+    "Inspection": {
+      "total": 4000,
+      "imported": 3209,
+      "rejected": 0,
+      "quarantined": 791
+    }
+  },
+  "analytics": {
+    "Application.ApplicationStatus": {
+      "APPROVED": 674,
+      "CORRECTION_REQUIRED": 649,
+      "REFERENCE_INSPECTION_PENDING": 672,
+      "REFERENCE_UNDER_REVIEW": 694,
+      "REJECTED": 685,
+      "SUBMITTED": 626
+    },
+    "Application.ApplicationType": {
+      "Commercial": 664,
+      "Demolition": 653,
+      "Electrical": 667,
+      "Plumbing": 717,
+      "Renovation": 643,
+      "Residential": 656
+    },
+    "Payment.PaymentStatus": {
+      "PAID": 1293,
+      "PENDING": 1326,
+      "REFERENCE_FAILED": 1381
+    },
+    "Inspection.Result": {
+      "COULD_NOT_COMPLETE": 816,
+      "FAILED": 808,
+      "PASSED": 784,
+      "REFERENCE_PENDING": 801
+    }
+  },
+  "mappingRules": {
+    "OfficerRole": {
+      "Permit Reviewer": "PERMIT_REVIEWER",
+      "Senior Officer": "SENIOR_DEPARTMENT_OFFICER",
+      "Building Inspector": "BUILDING_INSPECTOR",
+      "Zoning Officer": "ZONING_OFFICER"
+    },
+    "ApplicationStatus": {
+      "Rejected": "REJECTED",
+      "Approved": "APPROVED",
+      "Submitted": "SUBMITTED",
+      "Correction Required": "CORRECTION_REQUIRED",
+      "Under Review": "REFERENCE_UNDER_REVIEW",
+      "Inspection Pending": "REFERENCE_INSPECTION_PENDING"
+    },
+    "PaymentStatus": {
+      "Failed": "REFERENCE_FAILED",
+      "Pending": "PENDING",
+      "Paid": "PAID"
+    },
+    "Result": {
+      "Pending": "REFERENCE_PENDING",
+      "Pass": "PASSED",
+      "Fail": "FAILED",
+      "Could Not Complete": "COULD_NOT_COMPLETE"
+    },
+    "Stage": {
+      "Initial Review": "REFERENCE_INITIAL_REVIEW",
+      "Zoning Review": "ZONING_OFFICER",
+      "Building Review": "REFERENCE_BUILDING_REVIEW",
+      "Final Review": "REFERENCE_FINAL_REVIEW",
+      "Inspection": "BUILDING_INSPECTOR"
+    }
+  },
+  "limitations": [
+    "REFERENCE_* categories retain ambiguity rather than guessing workflow state.",
+    "Inspection Officer is unresolved and quarantined.",
+    "No referenced document binaries are supplied or fabricated.",
+    "Counts describe reference rows, not operational users or permits."
+  ]
+}

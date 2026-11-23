@@ -1,0 +1,91 @@
+ M .gitignore
+ M INTEGRATION.md
+ M README.md
+ M VALIDATION.md
+ M backend/pom.xml
+ M backend/src/main/java/edu/kle/permits/AdminService.java
+ M backend/src/main/java/edu/kle/permits/ApiErrors.java
+ M backend/src/main/java/edu/kle/permits/AppUser.java
+ M backend/src/main/java/edu/kle/permits/AuthController.java
+ M backend/src/main/java/edu/kle/permits/AuthService.java
+ M backend/src/main/java/edu/kle/permits/AuthSession.java
+ M backend/src/main/java/edu/kle/permits/Dtos.java
+ M backend/src/main/java/edu/kle/permits/PermitDtos.java
+ M backend/src/main/java/edu/kle/permits/PermitService.java
+ M backend/src/main/java/edu/kle/permits/SecurityConfig.java
+ M backend/src/main/java/edu/kle/permits/SessionFilter.java
+ M backend/src/main/java/edu/kle/permits/SupportRequests.java
+ M backend/src/main/java/edu/kle/permits/SupportService.java
+ M backend/src/main/java/edu/kle/permits/WorkflowEntities.java
+ M backend/src/main/resources/application.yml
+ M backend/src/test/java/edu/kle/permits/SecurityIntegrationTest.java
+ M backend/src/test/java/edu/kle/permits/SupportIntegrationTest.java
+ M frontend/src/Permit.jsx
+ M frontend/src/api.js
+ M frontend/src/main.jsx
+ M frontend/src/style.css
+ M frontend/vite.config.js
+?? DATABASE_VERIFICATION.md
+?? DEFECT_RETEST_REPORT.md
+?? E1_AKHIL_TECHNICAL_GUIDE.md
+?? E2_TECHNICAL_GUIDE.md
+?? E3_TECHNICAL_GUIDE.md
+?? E4_TECHNICAL_GUIDE.md
+?? ENGINE_READINESS.md
+?? FINAL_GATE3_DELIVERABLES/
+?? FINAL_IMPLEMENTATION_REPORT.md
+?? FINAL_REVIEW_CHECKLIST.md
+?? FINAL_TEST_RESULTS.md
+?? GIT_EVIDENCE.md
+?? IMPLEMENTATION_PROGRESS.md
+?? REGISTRATION_PROGRESS.md
+?? REQUIREMENTS_TRACEABILITY_MATRIX.md
+?? REVIEW_DEMO_GUIDE.md
+?? backend/.idea/vcs.xml
+?? backend/src/main/java/db/
+?? backend/src/main/java/edu/kle/permits/AssignmentEngine.java
+?? backend/src/main/java/edu/kle/permits/AuditService.java
+?? backend/src/main/java/edu/kle/permits/DocumentController.java
+?? backend/src/main/java/edu/kle/permits/EngineController.java
+?? backend/src/main/java/edu/kle/permits/EngineEntities.java
+?? backend/src/main/java/edu/kle/permits/EngineRepositories.java
+?? backend/src/main/java/edu/kle/permits/LocalSmsProvider.java
+?? backend/src/main/java/edu/kle/permits/NotificationService.java
+?? backend/src/main/java/edu/kle/permits/ReferenceController.java
+?? backend/src/main/java/edu/kle/permits/RegistrationController.java
+?? backend/src/main/java/edu/kle/permits/RegistrationDtos.java
+?? backend/src/main/java/edu/kle/permits/RegistrationIdentityGuard.java
+?? backend/src/main/java/edu/kle/permits/RegistrationRateLimiter.java
+?? backend/src/main/java/edu/kle/permits/RegistrationRepositories.java
+?? backend/src/main/java/edu/kle/permits/RegistrationRequest.java
+?? backend/src/main/java/edu/kle/permits/RegistrationService.java
+?? backend/src/main/java/edu/kle/permits/SmsProvider.java
+?? backend/src/main/resources/db/migration/V10__registration_approval_activation.sql
+?? backend/src/main/resources/db/migration/V5__make_session_last_activity_optional.sql
+?? backend/src/main/resources/db/migration/V6__restore_idle_sessions.sql
+?? backend/src/main/resources/db/migration/V7__routing_notifications_audit_documents.sql
+?? backend/src/main/resources/db/migration/V9__backfill_finished_legacy_assignments.sql
+?? backend/src/test/java/edu/kle/permits/EngineIntegrationTest.java
+?? backend/src/test/java/edu/kle/permits/RegistrationIntegrationTest.java
+?? frontend/src/EnginePanels.jsx
+?? frontend/src/Registration.jsx
+?? reference_data/
+?? review_evidence/
+?? scripts/browser_smoke.cjs
+?? scripts/build_registration_records.py
+?? scripts/build_review_reports.py
+?? scripts/finalize_registration_deck.mjs
+?? scripts/finalize_review_deck.mjs
+?? scripts/finish_review.py
+?? scripts/integrate_registration.py
+?? scripts/local_review.py
+?? scripts/registration_browser.cjs
+?? scripts/registration_button_baseline.cjs
+?? scripts/registration_environment.py
+?? scripts/registration_live_smoke.py
+?? scripts/registration_visual_qa.py
+?? scripts/render_word.ps1
+?? scripts/sanitize_registration_evidence.py
+?? scripts/smoke_api.py
+?? scripts/stage_reference.py
+?? scripts/test_stage_reference.py

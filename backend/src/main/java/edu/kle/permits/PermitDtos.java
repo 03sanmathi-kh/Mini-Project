@@ -15,10 +15,12 @@ public final class PermitDtos {
   @NotBlank @Size(max=150) String contractorArchitectName,
   @NotNull @DecimalMin("0.00") @Digits(integer=12,fraction=2) BigDecimal estimatedProjectCost,
   @NotNull LocalDate proposedStartDate,
-  @NotBlank @Size(max=2000) String supportingDocuments){}
+  @NotBlank @Size(max=2000) String supportingDocuments,@Size(max=80) String zone){
+  public ApplicationInput(String title,String type,String address,String description,String owner,String contractor,BigDecimal cost,LocalDate start,String docs){this(title,type,address,description,owner,contractor,cost,start,docs,"UNZONED");}
+ }
  public record Resubmit(@NotBlank @Size(max=2000) String response){}
  public record DocumentDecision(boolean complete,@Size(max=2000) String remarks){}
- public record AssignmentInput(@NotNull AssignmentType type,@NotNull Long assigneeId){}
+ public record AssignmentInput(@NotNull AssignmentType type,@NotNull Long assigneeId,boolean confirm,@Size(max=1000) String reason){public AssignmentInput(AssignmentType type,Long id){this(type,id,false,null);}}
  public record ReviewInput(@NotNull ReviewRecommendation recommendation,@Size(max=2000) String remarks){}
  public record DecisionInput(@NotNull String decision,@Size(max=2000) String remarks){}
  public record PaymentInput(@NotNull @DecimalMin("0.00") BigDecimal feeAmount,@NotNull PaymentStatus status,@Size(max=100) String paymentReference){}
@@ -32,6 +34,6 @@ public final class PermitDtos {
  public record InspectionView(Long id,Person inspector,String type,LocalDate scheduledDate,LocalDate conductedDate,String observations,InspectionResult result,boolean finalInspection,Instant createdAt){}
  public record HistoryView(Long id,PermitStatus previousStatus,PermitStatus newStatus,String action,String remarks,Long actorId,String actorName,String actorEmail,Role actorRole,Instant occurredAt){}
  public record ApplicationSummary(Long id,String permitNumber,String projectTitle,String permitType,String applicantName,List<String> assignedOfficerNames,PermitStatus status,int reviewRound,Instant updatedAt){}
- public record ApplicationView(Long id,String permitNumber,Person applicant,String projectTitle,String permitType,String propertyAddress,String constructionDescription,String propertyOwnerName,String contractorArchitectName,BigDecimal estimatedProjectCost,LocalDate proposedStartDate,String supportingDocuments,PermitStatus status,int reviewRound,Instant createdAt,Instant updatedAt,List<AssignmentView> assignments,List<ReviewView> reviews,List<CorrectionView> corrections,PaymentView payment,List<InspectionView> inspections,List<HistoryView> history,Set<String> availableActions){}
+ public record ApplicationView(Long id,String permitNumber,Person applicant,String projectTitle,String permitType,String propertyAddress,String constructionDescription,String propertyOwnerName,String contractorArchitectName,BigDecimal estimatedProjectCost,LocalDate proposedStartDate,String supportingDocuments,PermitStatus status,int reviewRound,Instant createdAt,Instant updatedAt,List<AssignmentView> assignments,List<ReviewView> reviews,List<CorrectionView> corrections,PaymentView payment,List<InspectionView> inspections,List<HistoryView> history,Set<String> availableActions,String zone){}
  public record Dashboard(Map<String,Long> counts,List<ApplicationSummary> applications){}
 }

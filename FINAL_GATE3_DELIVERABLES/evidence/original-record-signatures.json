@@ -1,0 +1,37 @@
+{
+  "app_users": {
+    "maximum": 8,
+    "fields": "id,full_name,email,personal_contact_email,password_hash,role,enabled,locked,created_at",
+    "signature": " count |               md5                \n-------+----------------------------------\n     8 | 918edc0b31cd7139ad424c96cdf1815e\n(1 row)\n\n"
+  },
+  "permit_applications": {
+    "maximum": 2,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n     2 | 49394d9b7d94e1bffeb94424d82a9ab2\n(1 row)\n\n"
+  },
+  "workflow_history": {
+    "maximum": 18,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n    18 | 490a524dbed0053da98005188b4589bf\n(1 row)\n\n"
+  },
+  "audit_log": {
+    "maximum": 0,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n     0 | d41d8cd98f00b204e9800998ecf8427e\n(1 row)\n\n"
+  },
+  "support_requests": {
+    "maximum": 0,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n     0 | d41d8cd98f00b204e9800998ecf8427e\n(1 row)\n\n"
+  },
+  "application_assignments": {
+    "maximum": 5,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n     5 | 7f6d74644844ccb5e13dd4e8df623a49\n(1 row)\n\n"
+  },
+  "application_reviews": {
+    "maximum": 4,
+    "fields": "*",
+    "signature": " count |               md5                \n-------+----------------------------------\n     4 | 7c0b63fcb519aa10e135fc0d83d86f49\n(1 row)\n\n"
+  }
+}

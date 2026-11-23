@@ -1,17 +1,7 @@
-# Validation record
+# PermitWorks current registration validation
 
-Checked on 26 October 2026.
+23 November 2026. Full H2 regression: 77 executed, 76 passed, 0 failed, 1 skipped. PostgreSQL registration: 31 executed, 31 passed, 0 failed, 0 skipped. Frontend production build: PASS, 92 modules. Browser workflow: PASS.
 
-- React production build: passed (`npm run build`), 85 modules transformed.
-- JSX parser check: passed.
-- Flyway V1 -> V2 -> V3 execution on H2 PostgreSQL compatibility mode: passed.
-- Spring Boot smoke startup: passed; 11 repositories discovered, all three migrations applied, Hibernate `ddl-auto=validate` passed, and Tomcat started.
-- Backend tests: 16 passed, 0 failures, 0 errors, 0 skipped.
-  - 10 MockMvc security integration tests.
-  - 5 workflow/email integration tests, including the complete correction, second review round, approval, payment, final inspection, and closure path.
-  - 1 focused ownership/assignment policy test.
-- Packaged executable JAR created: `backend/target/permit-engine1-1.0.0.jar`.
+Current full source: backend/target-registration/surefire-reports. Current PostgreSQL registration suite: backend/target-registration-pg/surefire-reports. Frontend build: FINAL_GATE3_DELIVERABLES/evidence/registration-frontend-build-final.log. Browser: FINAL_GATE3_DELIVERABLES/evidence/registration-browser-results.json. Live V1–V10 and original-data preservation: FINAL_GATE3_DELIVERABLES/evidence/live-v10-schema.txt and record-preservation.json.
 
-The managed Windows sandbox runs JDK 21 from an `E:` shim and denies `ZipFileSystem.close()` canonical-path access to dependency jars. Consequently, a normal Maven lifecycle reports an `AccessDeniedException` after `javac` has emitted valid Java 17 classes. Validation used the emitted classes, ran Surefire directly (all tests passed), then ran the remaining Maven verify/package goals with compilation/test phases skipped. Docker and a normal JDK 17/IntelliJ environment do not use this sandbox path arrangement.
-
-Not executed here: a live PostgreSQL server, Docker Desktop, or a manual multi-user browser presentation. PostgreSQL-specific DDL is limited to standard constructs supported by PostgreSQL; the same migration chain passed on the test database. The frontend production bundle and backend application startup were both executed successfully.
+Earlier 46-case H2 / 20-case PostgreSQL engine checks and CSV staging tests remain historical in review_evidence. They are not counted as additional current V10 executions. See FINAL_GATE3_DELIVERABLES/E1_TEST_CASE_REGISTER.md for every current case. No frontend unit-test command exists; build and actual Chrome checks were run. Broader NFR limits and human approval remain documented.

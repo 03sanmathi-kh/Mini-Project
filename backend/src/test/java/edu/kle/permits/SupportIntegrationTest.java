@@ -51,4 +51,22 @@ class SupportIntegrationTest {
   applicant=users.findById(applicant.id).orElseThrow();applicant.locked=true;users.save(applicant);
   mvc.perform(post("/api/admin/support/"+id+"/unlock").cookie(adminToken).with(csrf())).andExpect(status().isOk());assertFalse(users.findById(applicant.id).orElseThrow().locked);assertTrue(events.countByAction("SUPPORT_ACCOUNT_UNLOCKED")>0);
  }
+ @Test void adminSupportListSearchAndOptionalFiltersUseTypedPredicates()throws Exception{
+  submit(request("support-user@permitworks.com","contact@example.com"),"10.0.5.1");
+  submit(request(null,"second@example.com").replace("Support User","Distinctive Requester").replace("ACCOUNT_LOCKED","OTHER").replace("Cannot sign in","Distinctive Subject"),"10.0.5.2");
+  submit(request("third@permitworks.com","third@example.com").replace("ACCOUNT_LOCKED","LOGIN_PROBLEM"),"10.0.5.3");
+  List<SupportRequest> all=requests.findAll();
+  SupportRequest second=all.stream().filter(s->s.personalContactEmail.equals("second@example.com")).findFirst().orElseThrow();
+  second.status=SupportStatus.IN_PROGRESS;requests.save(second);
+  Cookie adminToken=login("admin@permitworks.com","InitialAdminPassword!");
+  mvc.perform(get("/api/admin/support").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(3));
+  mvc.perform(get("/api/admin/support").param("query","DISTINCTIVE").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1)).andExpect(jsonPath("$.content[0].requesterName").value("Distinctive Requester"));
+  mvc.perform(get("/api/admin/support").param("query","contact@example.com").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+  mvc.perform(get("/api/admin/support").param("query","support-user@permitworks.com").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+  String firstTicket=all.stream().filter(s->s.personalContactEmail.equals("contact@example.com")).findFirst().orElseThrow().ticketNumber;
+  mvc.perform(get("/api/admin/support").param("query",firstTicket.toLowerCase(Locale.ROOT)).cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+  mvc.perform(get("/api/admin/support").param("status","IN_PROGRESS").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+  mvc.perform(get("/api/admin/support").param("category","OTHER").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+  mvc.perform(get("/api/admin/support").param("status","IN_PROGRESS").param("category","OTHER").cookie(adminToken)).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+ }
 }

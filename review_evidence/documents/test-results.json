@@ -1,0 +1,469 @@
+{
+  "h2": [
+    {
+      "class": "AccessPolicyTest",
+      "method": "ownershipAndAssignmentRequireMatchingTrustedId",
+      "status": "PASS",
+      "seconds": 0.332,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.AccessPolicyTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_05_workloadApiIsRoleRestricted",
+      "status": "PASS",
+      "seconds": 2.177,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_08_postgresqlRejectsAuditMutation",
+      "status": "SKIP",
+      "seconds": 0.0,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_06_concurrentSubmissionCreatesExactlyOneVersion",
+      "status": "PASS",
+      "seconds": 1.833,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_03_overrideNeedsRoleConfirmationReasonAndPreservesPrevious",
+      "status": "PASS",
+      "seconds": 1.645,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_04_overdueUsesConfiguredDeadlineAndReportsUnconfigured",
+      "status": "PASS",
+      "seconds": 2.192,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery",
+      "status": "PASS",
+      "seconds": 0.286,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences",
+      "status": "PASS",
+      "seconds": 0.506,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_01_failureAfterMultipleWritesRollsBackEverything",
+      "status": "PASS",
+      "seconds": 0.272,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_02_noEligibleOfficerQueuesAndAlertsWithoutStateCorruption",
+      "status": "PASS",
+      "seconds": 1.124,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted",
+      "status": "PASS",
+      "seconds": 0.795,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly",
+      "status": "PASS",
+      "seconds": 1.836,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_03_smsFailureStillPersistsInAppNotificationAndRecipientIsolation",
+      "status": "PASS",
+      "seconds": 0.285,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_03_simultaneousReviewProducesOneRecommendation",
+      "status": "PASS",
+      "seconds": 0.99,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_06_concurrentLeastLoadDecisionsAreSerialized",
+      "status": "PASS",
+      "seconds": 1.679,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_01_leastLoadedEligibleOfficerAndLowestIdTie",
+      "status": "PASS",
+      "seconds": 2.033,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_08_reportFiltersMatchActualCounts",
+      "status": "PASS",
+      "seconds": 0.85,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce",
+      "status": "PASS",
+      "seconds": 1.303,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_07_invalidAndMismatchedRoutingIsRejected",
+      "status": "PASS",
+      "seconds": 1.129,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_05_secureDocumentVersionsKeepPriorBytesAndEnforceOwnership",
+      "status": "PASS",
+      "seconds": 0.64,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_02_incompleteInspectionRequiresReasonAndCannotClose",
+      "status": "PASS",
+      "seconds": 2.505,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "PermitWorkflowIntegrationTest",
+      "method": "emailRulesNormalizeAndRejectExternalDomains",
+      "status": "PASS",
+      "seconds": 10.23,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml"
+    },
+    {
+      "class": "PermitWorkflowIntegrationTest",
+      "method": "completeCorrectionPaymentInspectionFlowEnforcesOwnershipAndAssignment",
+      "status": "PASS",
+      "seconds": 1.911,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml"
+    },
+    {
+      "class": "PermitWorkflowIntegrationTest",
+      "method": "migratedBootstrapAdminUsesPermitworksEmail",
+      "status": "PASS",
+      "seconds": 0.096,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml"
+    },
+    {
+      "class": "PermitWorkflowIntegrationTest",
+      "method": "seniorCanRejectOnlyAfterBothRecommendations",
+      "status": "PASS",
+      "seconds": 0.59,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml"
+    },
+    {
+      "class": "PermitWorkflowIntegrationTest",
+      "method": "invalidTransitionReturnsConflictAndCreatesNoFalseTransition",
+      "status": "PASS",
+      "seconds": 0.132,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml"
+    },
+    {
+      "class": "ResetScriptTest",
+      "method": "developmentResetIsGuardedOrderedAndPreservesFlywayAndAdmin",
+      "status": "PASS",
+      "seconds": 0.016,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.ResetScriptTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "protectedEndpointsRequireAuthenticationAndCsrf",
+      "status": "PASS",
+      "seconds": 1.559,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "allEightRolesEnforceAdminBoundary",
+      "status": "PASS",
+      "seconds": 38.923,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "passwordByteLimitsAndExistingHashesRemainStable",
+      "status": "PASS",
+      "seconds": 6.364,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "disablingRevokesSessionsAndSelfDisableIsRejected",
+      "status": "PASS",
+      "seconds": 1.708,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "rolesAndTokensCannotBeBypassed",
+      "status": "PASS",
+      "seconds": 1.033,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "logoutRevokesToken",
+      "status": "PASS",
+      "seconds": 0.693,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "adminCreationValidationAndRoleChanges",
+      "status": "PASS",
+      "seconds": 3.622,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "adminLoginPersistsCompleteEightHourSessionAndRemainsAuthenticated",
+      "status": "PASS",
+      "seconds": 0.776,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "personalEmailNeverAuthenticatesAndLegacyNullIsAllowed",
+      "status": "PASS",
+      "seconds": 3.508,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "explicitActivityExtendsIdleButNotAbsoluteLifetime",
+      "status": "PASS",
+      "seconds": 2.18,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "locksOnFifthFailureAndOnlyAdminCanUnlock",
+      "status": "PASS",
+      "seconds": 24.722,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "shortIncorrectPasswordIsUnauthorizedAndCountsTowardLockout",
+      "status": "PASS",
+      "seconds": 0.151,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "browserCsrfCookieAndHeaderAllowLogin",
+      "status": "PASS",
+      "seconds": 3.593,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SecurityIntegrationTest",
+      "method": "idleExpiryBoundaryAndPollingDoNotExtendSession",
+      "status": "PASS",
+      "seconds": 2.162,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml"
+    },
+    {
+      "class": "SupportIntegrationTest",
+      "method": "adminCanManageAndApplicantReceivesForbidden",
+      "status": "PASS",
+      "seconds": 5.268,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml"
+    },
+    {
+      "class": "SupportIntegrationTest",
+      "method": "validatesEmailsContentAndRateLimits",
+      "status": "PASS",
+      "seconds": 0.219,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml"
+    },
+    {
+      "class": "SupportIntegrationTest",
+      "method": "publicSubmissionWorksWithOrWithoutPermitworksEmailAndIsNeutral",
+      "status": "PASS",
+      "seconds": 0.075,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml"
+    },
+    {
+      "class": "SupportIntegrationTest",
+      "method": "publicStatusReturnsOnlySafeFieldsAndRequiresMatchingPersonalEmail",
+      "status": "PASS",
+      "seconds": 0.115,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml"
+    },
+    {
+      "class": "SupportIntegrationTest",
+      "method": "adminSupportListSearchAndOptionalFiltersUseTypedPredicates",
+      "status": "PASS",
+      "seconds": 1.55,
+      "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml"
+    }
+  ],
+  "postgresql": [
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_05_workloadApiIsRoleRestricted",
+      "status": "PASS",
+      "seconds": 2.414,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_08_postgresqlRejectsAuditMutation",
+      "status": "PASS",
+      "seconds": 2.204,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_06_concurrentSubmissionCreatesExactlyOneVersion",
+      "status": "PASS",
+      "seconds": 0.4,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_03_overrideNeedsRoleConfirmationReasonAndPreservesPrevious",
+      "status": "PASS",
+      "seconds": 1.244,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_04_overdueUsesConfiguredDeadlineAndReportsUnconfigured",
+      "status": "PASS",
+      "seconds": 1.53,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery",
+      "status": "PASS",
+      "seconds": 0.635,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences",
+      "status": "PASS",
+      "seconds": 0.762,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_01_failureAfterMultipleWritesRollsBackEverything",
+      "status": "PASS",
+      "seconds": 0.188,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_02_noEligibleOfficerQueuesAndAlertsWithoutStateCorruption",
+      "status": "PASS",
+      "seconds": 0.684,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted",
+      "status": "PASS",
+      "seconds": 0.936,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly",
+      "status": "PASS",
+      "seconds": 1.731,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_03_smsFailureStillPersistsInAppNotificationAndRecipientIsolation",
+      "status": "PASS",
+      "seconds": 0.48,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_03_simultaneousReviewProducesOneRecommendation",
+      "status": "PASS",
+      "seconds": 0.695,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_06_concurrentLeastLoadDecisionsAreSerialized",
+      "status": "PASS",
+      "seconds": 2.644,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_01_leastLoadedEligibleOfficerAndLowestIdTie",
+      "status": "PASS",
+      "seconds": 1.362,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_08_reportFiltersMatchActualCounts",
+      "status": "PASS",
+      "seconds": 0.722,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce",
+      "status": "PASS",
+      "seconds": 1.027,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E4_07_invalidAndMismatchedRoutingIsRejected",
+      "status": "PASS",
+      "seconds": 1.024,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E3_05_secureDocumentVersionsKeepPriorBytesAndEnforceOwnership",
+      "status": "PASS",
+      "seconds": 0.89,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    },
+    {
+      "class": "EngineIntegrationTest",
+      "method": "TC_E2_02_incompleteInspectionRequiresReasonAndCannotClose",
+      "status": "PASS",
+      "seconds": 1.49,
+      "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml"
+    }
+  ],
+  "summary": "H2 regression: 46 executions, 45 passed, 0 failed, 1 PostgreSQL-only skipped. PostgreSQL engine run: 20 executions, 20 passed, 0 failed, 0 skipped."
+}

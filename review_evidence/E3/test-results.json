@@ -1,0 +1,154 @@
+[
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_08_postgresqlRejectsAuditMutation",
+    "status": "SKIP",
+    "seconds": 0.0,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_06_concurrentSubmissionCreatesExactlyOneVersion",
+    "status": "PASS",
+    "seconds": 1.833,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery",
+    "status": "PASS",
+    "seconds": 0.286,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences",
+    "status": "PASS",
+    "seconds": 0.506,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_01_failureAfterMultipleWritesRollsBackEverything",
+    "status": "PASS",
+    "seconds": 0.272,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly",
+    "status": "PASS",
+    "seconds": 1.836,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_03_simultaneousReviewProducesOneRecommendation",
+    "status": "PASS",
+    "seconds": 0.99,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce",
+    "status": "PASS",
+    "seconds": 1.303,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_05_secureDocumentVersionsKeepPriorBytesAndEnforceOwnership",
+    "status": "PASS",
+    "seconds": 0.64,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "ResetScriptTest",
+    "method": "developmentResetIsGuardedOrderedAndPreservesFlywayAndAdmin",
+    "status": "PASS",
+    "seconds": 0.016,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.ResetScriptTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_08_postgresqlRejectsAuditMutation",
+    "status": "PASS",
+    "seconds": 2.204,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_06_concurrentSubmissionCreatesExactlyOneVersion",
+    "status": "PASS",
+    "seconds": 0.4,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery",
+    "status": "PASS",
+    "seconds": 0.635,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences",
+    "status": "PASS",
+    "seconds": 0.762,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_01_failureAfterMultipleWritesRollsBackEverything",
+    "status": "PASS",
+    "seconds": 0.188,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly",
+    "status": "PASS",
+    "seconds": 1.731,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_03_simultaneousReviewProducesOneRecommendation",
+    "status": "PASS",
+    "seconds": 0.695,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce",
+    "status": "PASS",
+    "seconds": 1.027,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_05_secureDocumentVersionsKeepPriorBytesAndEnforceOwnership",
+    "status": "PASS",
+    "seconds": 0.89,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  }
+]

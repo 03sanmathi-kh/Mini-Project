@@ -1,0 +1,232 @@
+[
+  {
+    "handbookId": "TC-E1-01",
+    "class": "AccessPolicyTest",
+    "method": "ownershipAndAssignmentRequireMatchingTrustedId"
+  },
+  {
+    "handbookId": "TC-E4-05",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_05_workloadApiIsRoleRestricted"
+  },
+  {
+    "handbookId": "TC-E3-08",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_08_postgresqlRejectsAuditMutation"
+  },
+  {
+    "handbookId": "TC-E3-06",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_06_concurrentSubmissionCreatesExactlyOneVersion"
+  },
+  {
+    "handbookId": "TC-E4-03",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_03_overrideNeedsRoleConfirmationReasonAndPreservesPrevious"
+  },
+  {
+    "handbookId": "TC-E4-04",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_04_overdueUsesConfiguredDeadlineAndReportsUnconfigured"
+  },
+  {
+    "handbookId": "TC-E3-07",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_07_rollbackRecoveryTimeIsMeasuredWithoutClaimingCrashRecovery"
+  },
+  {
+    "handbookId": "TC-E3-02",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_02_foreignKeysRejectAllRelevantInvalidReferences"
+  },
+  {
+    "handbookId": "TC-E3-01",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_01_failureAfterMultipleWritesRollsBackEverything"
+  },
+  {
+    "handbookId": "TC-E4-02",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_02_noEligibleOfficerQueuesAndAlertsWithoutStateCorruption"
+  },
+  {
+    "handbookId": "TC-E2-01",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted"
+  },
+  {
+    "handbookId": "TC-E3-09",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_09_legacyCompletionBackfillUsesCurrentReviewRoundOnly"
+  },
+  {
+    "handbookId": "TC-E2-03",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_03_smsFailureStillPersistsInAppNotificationAndRecipientIsolation"
+  },
+  {
+    "handbookId": "TC-E3-03",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_03_simultaneousReviewProducesOneRecommendation"
+  },
+  {
+    "handbookId": "TC-E4-06",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_06_concurrentLeastLoadDecisionsAreSerialized"
+  },
+  {
+    "handbookId": "TC-E4-01",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_01_leastLoadedEligibleOfficerAndLowestIdTie"
+  },
+  {
+    "handbookId": "TC-E4-08",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_08_reportFiltersMatchActualCounts"
+  },
+  {
+    "handbookId": "TC-E3-04",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_04_simultaneousPaymentsProduceOnePaymentAndIssueOnce"
+  },
+  {
+    "handbookId": "TC-E4-07",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E4_07_invalidAndMismatchedRoutingIsRejected"
+  },
+  {
+    "handbookId": "TC-E3-05",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E3_05_secureDocumentVersionsKeepPriorBytesAndEnforceOwnership"
+  },
+  {
+    "handbookId": "TC-E2-02",
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_02_incompleteInspectionRequiresReasonAndCannotClose"
+  },
+  {
+    "handbookId": "TC-E2-FLOW-01",
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "emailRulesNormalizeAndRejectExternalDomains"
+  },
+  {
+    "handbookId": "TC-E2-FLOW-02",
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "completeCorrectionPaymentInspectionFlowEnforcesOwnershipAndAssignment"
+  },
+  {
+    "handbookId": "TC-E2-FLOW-03",
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "migratedBootstrapAdminUsesPermitworksEmail"
+  },
+  {
+    "handbookId": "TC-E2-FLOW-04",
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "seniorCanRejectOnlyAfterBothRecommendations"
+  },
+  {
+    "handbookId": "TC-E2-FLOW-05",
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "invalidTransitionReturnsConflictAndCreatesNoFalseTransition"
+  },
+  {
+    "handbookId": "TC-E3-RESET-01",
+    "class": "ResetScriptTest",
+    "method": "developmentResetIsGuardedOrderedAndPreservesFlywayAndAdmin"
+  },
+  {
+    "handbookId": "TC-E1-02",
+    "class": "SecurityIntegrationTest",
+    "method": "protectedEndpointsRequireAuthenticationAndCsrf"
+  },
+  {
+    "handbookId": "TC-E1-03",
+    "class": "SecurityIntegrationTest",
+    "method": "allEightRolesEnforceAdminBoundary"
+  },
+  {
+    "handbookId": "TC-E1-04",
+    "class": "SecurityIntegrationTest",
+    "method": "passwordByteLimitsAndExistingHashesRemainStable"
+  },
+  {
+    "handbookId": "TC-E1-05",
+    "class": "SecurityIntegrationTest",
+    "method": "disablingRevokesSessionsAndSelfDisableIsRejected"
+  },
+  {
+    "handbookId": "TC-E1-06",
+    "class": "SecurityIntegrationTest",
+    "method": "rolesAndTokensCannotBeBypassed"
+  },
+  {
+    "handbookId": "TC-E1-07",
+    "class": "SecurityIntegrationTest",
+    "method": "logoutRevokesToken"
+  },
+  {
+    "handbookId": "TC-E1-08",
+    "class": "SecurityIntegrationTest",
+    "method": "adminCreationValidationAndRoleChanges"
+  },
+  {
+    "handbookId": "TC-E1-09",
+    "class": "SecurityIntegrationTest",
+    "method": "adminLoginPersistsCompleteEightHourSessionAndRemainsAuthenticated"
+  },
+  {
+    "handbookId": "TC-E1-10",
+    "class": "SecurityIntegrationTest",
+    "method": "personalEmailNeverAuthenticatesAndLegacyNullIsAllowed"
+  },
+  {
+    "handbookId": "TC-E1-11",
+    "class": "SecurityIntegrationTest",
+    "method": "explicitActivityExtendsIdleButNotAbsoluteLifetime"
+  },
+  {
+    "handbookId": "TC-E1-12",
+    "class": "SecurityIntegrationTest",
+    "method": "locksOnFifthFailureAndOnlyAdminCanUnlock"
+  },
+  {
+    "handbookId": "TC-E1-13",
+    "class": "SecurityIntegrationTest",
+    "method": "shortIncorrectPasswordIsUnauthorizedAndCountsTowardLockout"
+  },
+  {
+    "handbookId": "TC-E1-14",
+    "class": "SecurityIntegrationTest",
+    "method": "browserCsrfCookieAndHeaderAllowLogin"
+  },
+  {
+    "handbookId": "TC-E1-15",
+    "class": "SecurityIntegrationTest",
+    "method": "idleExpiryBoundaryAndPollingDoNotExtendSession"
+  },
+  {
+    "handbookId": "TC-X-01",
+    "class": "SupportIntegrationTest",
+    "method": "adminCanManageAndApplicantReceivesForbidden"
+  },
+  {
+    "handbookId": "TC-X-02",
+    "class": "SupportIntegrationTest",
+    "method": "validatesEmailsContentAndRateLimits"
+  },
+  {
+    "handbookId": "TC-X-03",
+    "class": "SupportIntegrationTest",
+    "method": "publicSubmissionWorksWithOrWithoutPermitworksEmailAndIsNeutral"
+  },
+  {
+    "handbookId": "TC-X-04",
+    "class": "SupportIntegrationTest",
+    "method": "publicStatusReturnsOnlySafeFieldsAndRequiresMatchingPersonalEmail"
+  },
+  {
+    "handbookId": "TC-X-05",
+    "class": "SupportIntegrationTest",
+    "method": "adminSupportListSearchAndOptionalFiltersUseTypedPredicates"
+  }
+]

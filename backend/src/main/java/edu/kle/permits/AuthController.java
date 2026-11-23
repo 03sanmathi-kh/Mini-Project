@@ -14,11 +14,11 @@ public class AuthController {
  @GetMapping("/csrf") public Map<String,String> csrf(CsrfToken token){return Map.of("token",token.getToken());}
  @PostMapping("/login") public ResponseEntity<?> login(@Valid @RequestBody Dtos.Login input){
   var r=auth.login(input);
-  if(r.error()!=null)return ResponseEntity.status(401).body(new Dtos.ErrorBody(r.error()));
-  return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie(r.token(),28800)).body(r.user());
+  if(r.error()!=null)return ResponseEntity.status(r.error().startsWith("Account locked")?423:401).body(new Dtos.ErrorBody(r.error()));
+  return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie(r.token(),AuthSession.ABSOLUTE_TIMEOUT_SECONDS)).body(r.user());
  }
+ @PostMapping("/activity") public Map<String,String> activity(){return Map.of("message","Activity recorded");}
  @GetMapping("/me") public Dtos.UserView me(HttpServletRequest req){return Dtos.UserView.of((AppUser)req.getAttribute("currentUser"));}
- @PostMapping("/activity") public Map<String,String> activity(){return Map.of("status","active");}
  @PostMapping("/logout") public ResponseEntity<?> logout(HttpServletRequest req){AppUser u=(AppUser)req.getAttribute("currentUser");auth.logout((UUID)req.getAttribute("sessionId"),u.id);return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie("",0)).body(Map.of("message","Logged out"));}
  private String cookie(String value,long age){return ResponseCookie.from("PERMIT_TOKEN",value).httpOnly(true).secure(secure).sameSite("Strict").path("/").maxAge(age).build().toString();}
 }

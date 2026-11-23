@@ -9,14 +9,14 @@ enum AssignmentType {PERMIT_REVIEWER,ZONING_OFFICER,BUILDING_INSPECTOR}
 enum ReviewType {TECHNICAL,ZONING}
 enum ReviewRecommendation {APPROVE,CORRECTION_REQUIRED}
 enum PaymentStatus {PENDING,PAID}
-enum InspectionResult {SCHEDULED,PASSED,FAILED}
+enum InspectionResult {SCHEDULED,PASSED,FAILED,COULD_NOT_COMPLETE}
 
 @Entity @Table(name="permit_applications")
 class PermitRecord {
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;
  String permitNumber;
  @Column(nullable=false) Long applicantId;
- String projectTitle;String permitType;String propertyAddress;
+ String projectTitle;String permitType;String propertyAddress;String zone="UNZONED";
  @Column(length=2000) String constructionDescription;
  String propertyOwnerName;String contractorArchitectName;
  BigDecimal estimatedProjectCost;LocalDate proposedStartDate;
@@ -26,14 +26,14 @@ class PermitRecord {
  @Version long version;
  protected PermitRecord(){}
  PermitRecord(Long owner,PermitDtos.ApplicationInput d,Instant now){applicantId=owner;createdAt=updatedAt=now;apply(d);}
- void apply(PermitDtos.ApplicationInput d){projectTitle=d.projectTitle().trim();permitType=d.permitType().trim();propertyAddress=d.propertyAddress().trim();constructionDescription=d.constructionDescription().trim();propertyOwnerName=d.propertyOwnerName().trim();contractorArchitectName=d.contractorArchitectName().trim();estimatedProjectCost=d.estimatedProjectCost();proposedStartDate=d.proposedStartDate();supportingDocuments=d.supportingDocuments().trim();}
+ void apply(PermitDtos.ApplicationInput d){zone=d.zone()==null||d.zone().isBlank()?"UNZONED":d.zone().trim();projectTitle=d.projectTitle().trim();permitType=d.permitType().trim();propertyAddress=d.propertyAddress().trim();constructionDescription=d.constructionDescription().trim();propertyOwnerName=d.propertyOwnerName().trim();contractorArchitectName=d.contractorArchitectName().trim();estimatedProjectCost=d.estimatedProjectCost();proposedStartDate=d.proposedStartDate();supportingDocuments=d.supportingDocuments().trim();}
 }
 @Entity @Table(name="application_versions") class ApplicationVersion {
- @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;Long applicationId;int reviewRound;String projectTitle;String permitType;String propertyAddress;@Column(length=2000)String constructionDescription;String propertyOwnerName;String contractorArchitectName;BigDecimal estimatedProjectCost;LocalDate proposedStartDate;@Column(length=2000)String supportingDocuments;Instant submittedAt;
- protected ApplicationVersion(){} ApplicationVersion(PermitRecord p,Instant now){applicationId=p.id;reviewRound=p.reviewRound;projectTitle=p.projectTitle;permitType=p.permitType;propertyAddress=p.propertyAddress;constructionDescription=p.constructionDescription;propertyOwnerName=p.propertyOwnerName;contractorArchitectName=p.contractorArchitectName;estimatedProjectCost=p.estimatedProjectCost;proposedStartDate=p.proposedStartDate;supportingDocuments=p.supportingDocuments;submittedAt=now;}
+ @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;Long applicationId;int reviewRound;String projectTitle;String permitType;String propertyAddress;String zone="UNZONED";@Column(length=2000)String constructionDescription;String propertyOwnerName;String contractorArchitectName;BigDecimal estimatedProjectCost;LocalDate proposedStartDate;@Column(length=2000)String supportingDocuments;Instant submittedAt;
+ protected ApplicationVersion(){} ApplicationVersion(PermitRecord p,Instant now){applicationId=p.id;reviewRound=p.reviewRound;projectTitle=p.projectTitle;permitType=p.permitType;propertyAddress=p.propertyAddress;constructionDescription=p.constructionDescription;propertyOwnerName=p.propertyOwnerName;contractorArchitectName=p.contractorArchitectName;estimatedProjectCost=p.estimatedProjectCost;proposedStartDate=p.proposedStartDate;supportingDocuments=p.supportingDocuments;submittedAt=now;zone=p.zone;}
 }
 @Entity @Table(name="application_assignments") class ApplicationAssignment {
- @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;Long applicationId;@Enumerated(EnumType.STRING)AssignmentType assignmentType;Long assigneeId;Long assignedBy;Instant assignedAt;boolean active=true;
+ @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;Long applicationId;@Enumerated(EnumType.STRING)AssignmentType assignmentType;Long assigneeId;Long assignedBy;Instant assignedAt;boolean active=true;boolean completed=false;Instant dueAt;Long previousAssigneeId;String overrideReason;
  protected ApplicationAssignment(){} ApplicationAssignment(Long app,AssignmentType type,Long assignee,Long actor,Instant now){applicationId=app;assignmentType=type;assigneeId=assignee;assignedBy=actor;assignedAt=now;}
 }
 @Entity @Table(name="application_reviews") class ApplicationReview {

@@ -1,0 +1,162 @@
+[
+  {
+    "class": "AccessPolicyTest",
+    "method": "ownershipAndAssignmentRequireMatchingTrustedId",
+    "status": "PASS",
+    "seconds": 0.332,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.AccessPolicyTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "protectedEndpointsRequireAuthenticationAndCsrf",
+    "status": "PASS",
+    "seconds": 1.559,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "allEightRolesEnforceAdminBoundary",
+    "status": "PASS",
+    "seconds": 38.923,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "passwordByteLimitsAndExistingHashesRemainStable",
+    "status": "PASS",
+    "seconds": 6.364,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "disablingRevokesSessionsAndSelfDisableIsRejected",
+    "status": "PASS",
+    "seconds": 1.708,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "rolesAndTokensCannotBeBypassed",
+    "status": "PASS",
+    "seconds": 1.033,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "logoutRevokesToken",
+    "status": "PASS",
+    "seconds": 0.693,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "adminCreationValidationAndRoleChanges",
+    "status": "PASS",
+    "seconds": 3.622,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "adminLoginPersistsCompleteEightHourSessionAndRemainsAuthenticated",
+    "status": "PASS",
+    "seconds": 0.776,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "personalEmailNeverAuthenticatesAndLegacyNullIsAllowed",
+    "status": "PASS",
+    "seconds": 3.508,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "explicitActivityExtendsIdleButNotAbsoluteLifetime",
+    "status": "PASS",
+    "seconds": 2.18,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "locksOnFifthFailureAndOnlyAdminCanUnlock",
+    "status": "PASS",
+    "seconds": 24.722,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "shortIncorrectPasswordIsUnauthorizedAndCountsTowardLockout",
+    "status": "PASS",
+    "seconds": 0.151,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "browserCsrfCookieAndHeaderAllowLogin",
+    "status": "PASS",
+    "seconds": 3.593,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SecurityIntegrationTest",
+    "method": "idleExpiryBoundaryAndPollingDoNotExtendSession",
+    "status": "PASS",
+    "seconds": 2.162,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SecurityIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SupportIntegrationTest",
+    "method": "adminCanManageAndApplicantReceivesForbidden",
+    "status": "PASS",
+    "seconds": 5.268,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SupportIntegrationTest",
+    "method": "validatesEmailsContentAndRateLimits",
+    "status": "PASS",
+    "seconds": 0.219,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SupportIntegrationTest",
+    "method": "publicSubmissionWorksWithOrWithoutPermitworksEmailAndIsNeutral",
+    "status": "PASS",
+    "seconds": 0.075,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SupportIntegrationTest",
+    "method": "publicStatusReturnsOnlySafeFieldsAndRequiresMatchingPersonalEmail",
+    "status": "PASS",
+    "seconds": 0.115,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "SupportIntegrationTest",
+    "method": "adminSupportListSearchAndOptionalFiltersUseTypedPredicates",
+    "status": "PASS",
+    "seconds": 1.55,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.SupportIntegrationTest.xml",
+    "database": "h2"
+  }
+]

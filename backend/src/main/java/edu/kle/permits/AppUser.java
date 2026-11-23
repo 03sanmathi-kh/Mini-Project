@@ -11,6 +11,7 @@ public class AppUser {
  @Column(nullable=false) public String passwordHash;
  @Enumerated(EnumType.STRING) @Column(nullable=false) public Role role;
  public boolean enabled=true;
+ public boolean activationPending=false;
  public boolean locked=false;
  public int failedAttempts=0;
  public Instant createdAt=Instant.now();

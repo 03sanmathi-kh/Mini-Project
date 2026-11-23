@@ -1,0 +1,90 @@
+[
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted",
+    "status": "PASS",
+    "seconds": 0.795,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_03_smsFailureStillPersistsInAppNotificationAndRecipientIsolation",
+    "status": "PASS",
+    "seconds": 0.285,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_02_incompleteInspectionRequiresReasonAndCannotClose",
+    "status": "PASS",
+    "seconds": 2.505,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "emailRulesNormalizeAndRejectExternalDomains",
+    "status": "PASS",
+    "seconds": 10.23,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "completeCorrectionPaymentInspectionFlowEnforcesOwnershipAndAssignment",
+    "status": "PASS",
+    "seconds": 1.911,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "migratedBootstrapAdminUsesPermitworksEmail",
+    "status": "PASS",
+    "seconds": 0.096,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "seniorCanRejectOnlyAfterBothRecommendations",
+    "status": "PASS",
+    "seconds": 0.59,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "PermitWorkflowIntegrationTest",
+    "method": "invalidTransitionReturnsConflictAndCreatesNoFalseTransition",
+    "status": "PASS",
+    "seconds": 0.132,
+    "evidence": "backend/target-review/surefire-reports/TEST-edu.kle.permits.PermitWorkflowIntegrationTest.xml",
+    "database": "h2"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_01_unchangedResubmissionRejectedButActualEditAccepted",
+    "status": "PASS",
+    "seconds": 0.936,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_03_smsFailureStillPersistsInAppNotificationAndRecipientIsolation",
+    "status": "PASS",
+    "seconds": 0.48,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  },
+  {
+    "class": "EngineIntegrationTest",
+    "method": "TC_E2_02_incompleteInspectionRequiresReasonAndCannotClose",
+    "status": "PASS",
+    "seconds": 1.49,
+    "evidence": "backend/target-pg-review/surefire-reports/TEST-edu.kle.permits.EngineIntegrationTest.xml",
+    "database": "postgresql"
+  }
+]

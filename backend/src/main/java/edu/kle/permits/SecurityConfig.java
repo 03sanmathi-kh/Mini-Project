@@ -28,7 +28,7 @@ public class SecurityConfig {
   return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),"HmacSHA256");
  }
  @Bean JwtEncoder jwtEncoder(SecretKeySpec key){return new NimbusJwtEncoder(new ImmutableSecret<>(key));}
- @Bean JwtDecoder jwtDecoder(SecretKeySpec key){var d=NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();d.setJwtValidator(JwtValidators.createDefaultWithIssuer("permit-engine1"));return d;}
+ @Bean JwtDecoder jwtDecoder(SecretKeySpec key,Clock clock){var d=NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();var time=new JwtTimestampValidator(java.time.Duration.ZERO);time.setClock(clock);d.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(time,new JwtIssuerValidator("permit-engine1")));return d;}
  @Bean FilterRegistrationBean<SessionFilter> noDoubleFilter(SessionFilter f){var bean=new FilterRegistrationBean<>(f);bean.setEnabled(false);return bean;}
  @Bean CorsConfigurationSource cors(@Value("${app.allowed-origin}")String origin){var c=new CorsConfiguration();c.setAllowedOrigins(List.of(origin));c.setAllowedMethods(List.of("GET","POST","PATCH","OPTIONS"));c.setAllowedHeaders(List.of("Content-Type","X-XSRF-TOKEN"));c.setAllowCredentials(true);var source=new UrlBasedCorsConfigurationSource();source.registerCorsConfiguration("/**",c);return source;}
  @Bean SecurityFilterChain security(HttpSecurity http,SessionFilter filter)throws Exception{
@@ -37,7 +37,7 @@ public class SecurityConfig {
   return http.cors(c->{}).csrf(c->c.csrfTokenRepository(csrf).csrfTokenRequestHandler(handler))
    .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
    .formLogin(f->f.disable()).httpBasic(b->b.disable())
-   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/csrf","/api/auth/login","/api/support","/api/support/status").permitAll()
+   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/csrf","/api/auth/login","/api/support","/api/support/status","/api/registrations","/api/registrations/roles","/api/registrations/status","/api/registrations/activate").permitAll()
     .requestMatchers("/api/admin/**","/swagger-ui/**","/v3/api-docs/**").hasRole("ADMIN")
     .requestMatchers("/api/**").authenticated().anyRequest().denyAll())
    .exceptionHandling(e->e.authenticationEntryPoint((q,r,x)->{r.setStatus(401);r.setContentType("application/json");r.getWriter().write("{\"message\":\"Please log in. Your session may have expired.\"}");})

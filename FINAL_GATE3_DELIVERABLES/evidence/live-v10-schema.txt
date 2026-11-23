@@ -1,0 +1,34 @@
+ version |              description              | success 
+---------+---------------------------------------+---------
+ 1       | security                              | t
+ 2       | permitworks email                     | t
+ 3       | permit workflow                       | t
+ 4       | personal email and support            | t
+ 5       | make session last activity optional   | t
+ 6       | restore idle sessions                 | t
+ 7       | routing notifications audit documents | t
+ 8       | Protect append only evidence          | t
+ 9       | backfill finished legacy assignments  | t
+ 10      | registration approval activation      | t
+(10 rows)
+
+ original_users 
+----------------
+              8
+(1 row)
+
+ permits 
+---------
+       2
+(1 row)
+
+ pending_legacy_accounts 
+-------------------------
+                       0
+(1 row)
+
+ registrations 
+---------------
+             0
+(1 row)
+

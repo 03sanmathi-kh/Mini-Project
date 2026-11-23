@@ -1,0 +1,62 @@
+ current_database | current_user |                                 version                                  
+------------------+--------------+--------------------------------------------------------------------------
+ permits          | postgres     | PostgreSQL 17.11 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit
+(1 row)
+
+ version |              description              | success 
+---------+---------------------------------------+---------
+ 1       | security                              | t
+ 2       | permitworks email                     | t
+ 3       | permit workflow                       | t
+ 4       | personal email and support            | t
+ 5       | make session last activity optional   | t
+ 6       | restore idle sessions                 | t
+ 7       | routing notifications audit documents | t
+ 8       | Protect append only evidence          | t
+ 9       | backfill finished legacy assignments  | t
+(9 rows)
+
+ users 
+-------
+     8
+(1 row)
+
+ permits 
+---------
+       2
+(1 row)
+
+    table_name     |   column_name   | is_nullable 
+-------------------+-----------------+-------------
+ audit_log         | id              | NO
+ audit_log         | actor_id        | NO
+ audit_log         | action          | NO
+ audit_log         | event_date      | NO
+ audit_log         | occurred_at     | NO
+ audit_log         | entity_type     | NO
+ audit_log         | entity_id       | NO
+ audit_log         | details         | NO
+ auth_sessions     | id              | NO
+ auth_sessions     | user_id         | NO
+ auth_sessions     | created_at      | NO
+ auth_sessions     | last_activity   | NO
+ auth_sessions     | expires_at      | NO
+ auth_sessions     | revoked         | NO
+ document_versions | id              | NO
+ document_versions | application_id  | NO
+ document_versions | document_name   | NO
+ document_versions | version_no      | NO
+ document_versions | content_type    | NO
+ document_versions | content_hash    | NO
+ document_versions | content_size    | NO
+ document_versions | content_base64  | NO
+ document_versions | uploaded_by     | NO
+ document_versions | uploaded_at     | NO
+ officer_routing   | id              | NO
+ officer_routing   | officer_id      | NO
+ officer_routing   | permit_type     | NO
+ officer_routing   | zone            | NO
+ officer_routing   | assignment_type | NO
+ officer_routing   | sla_hours       | YES
+(30 rows)
+

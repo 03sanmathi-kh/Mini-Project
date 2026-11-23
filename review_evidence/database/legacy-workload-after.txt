@@ -1,0 +1,18 @@
+         status         | assignment_type | completed | count 
+------------------------+-----------------+-----------+-------
+ PENDING_FINAL_DECISION | PERMIT_REVIEWER | t         |     1
+ PENDING_FINAL_DECISION | ZONING_OFFICER  | t         |     1
+ PERMIT_ISSUED          | PERMIT_REVIEWER | t         |     1
+ PERMIT_ISSUED          | ZONING_OFFICER  | t         |     1
+(4 rows)
+
+ assignments 
+-------------
+           5
+(1 row)
+
+ reviews 
+---------
+       4
+(1 row)
+

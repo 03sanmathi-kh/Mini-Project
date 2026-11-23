@@ -1,17 +1,25 @@
 # PermitWorks
 
+Teammates: start with [TEAM_SETUP.md](TEAM_SETUP.md) to clone, configure your own local credentials, run the app and find the latest review files.
+
+The guide-requested E1 registration feature is implemented. Select **Register** on the login page to request access with a personal email, phone and an existing requested role. Save the tracking code and the independent private activation secret separately. Check status using personal email and tracking code. Admin reviews **Registration Requests**, selects the actual approved role and confirms approval or rejection. Approval assigns a PermitWorks login address and creates an account awaiting activation. Use the private secret within seven days to set a password, then sign in with the assigned `@permitworks.com` address.
+
+Requested roles do not grant permissions. The approval dialog defaults to APPLICANT; Admin must explicitly select privileged access. Activation secrets are single use and only their hashes persist. Personal email is for registration/status, not login. Lost secrets or expired approvals require Help and manual identity verification; automated secret reissue is not implemented. **Help and Support** remains inside Register. No email, SMTP, OTP or SMS is required.
+
+Current native local UI: http://localhost:5174 (backend 8080). Review artifacts and reproducible evidence are in [FINAL_GATE3_DELIVERABLES](FINAL_GATE3_DELIVERABLES/FINAL_IMPLEMENTATION_REPORT.md). This feature uses additive Flyway V10; preserve existing databases and previously applied migrations. See [VALIDATION.md](VALIDATION.md) for actual current results. Guide approval remains pending.
+
 PermitWorks is a presentation-ready, role-based building permit approval and inspection workflow. It follows a permit from applicant draft through document verification, assigned technical and zoning reviews, corrections, final decision, simulated payment, permit issuance, inspections, and project closure.
 
 ## Architecture and technology
 
-The React 19 + Vite frontend calls a Spring Boot 3.5 REST API through Axios. Spring Security validates an HS256 JWT stored only in an HttpOnly, SameSite=Strict cookie; server-side session rows provide revocation, an eight-hour absolute lifetime, and a 30-minute idle timeout. Spring Data JPA persists normalized workflow records in PostgreSQL 17. Flyway owns all schema changes. OpenAPI/Swagger remains available to signed-in Administrators.
+The React 19 + Vite frontend calls a Spring Boot 3.5 REST API through Axios. Spring Security validates an HS256 JWT stored only in an HttpOnly, SameSite=Strict cookie; server-side session rows provide revocation and an eight-hour absolute lifetime. Sessions expire after 30 minutes idle, eight hours absolutely, explicit logout, or administrative revocation. Read-only polling never refreshes activity. Spring Data JPA persists normalized workflow records in PostgreSQL 17. Flyway owns all schema changes. OpenAPI/Swagger remains available to signed-in Administrators.
 
 ```text
 Browser (React/Vite)
   -> CSRF-protected REST API (Spring MVC)
   -> role + ownership/assignment checks (Spring Security and PermitService)
   -> transactional state machine (Spring Data JPA)
-  -> PostgreSQL schema (Flyway V1 through V4)
+  -> PostgreSQL schema (Flyway V1 through V10)
 ```
 
 The workflow tables are `permit_applications`, `application_versions`, `application_assignments`, `application_reviews`, `correction_requests`, `payment_records`, `inspections`, and append-only-through-the-API `workflow_history`. `V4__personal_email_and_support.sql` adds personal contact email and the normalized `support_requests` workflow without changing an existing account password hash.
@@ -140,7 +148,7 @@ All mutating calls require the CSRF cookie/header pair. The frontend initializes
 
 ## Help and support
 
-From the sign-in page, select **Get help** to report a forgotten password or PermitWorks email, locked/disabled account, unrecognized email, new-account need, login problem, or another issue. Full name, personal contact email, category, subject, and description are required; the PermitWorks email is optional. Submissions are validated, rate-limited per source IP, stored in PostgreSQL, and return a human-readable ticket such as `PW-HELP-2026-00001`. The public response never reveals whether an account exists.
+From the sign-in page, select **Register**, then **Help and Support** to report a forgotten password or PermitWorks email, locked/disabled account, unrecognized email, new-account need, login problem, or another issue. Full name, personal contact email, category, subject, and description are required; the PermitWorks email is optional. Submissions are validated, rate-limited per source IP, stored in PostgreSQL, and return a human-readable ticket such as `PW-HELP-2026-00001`. The public response never reveals whether an account exists.
 
 Use **Check ticket status** with the ticket number and the same personal contact email. The public result contains only category, status, submitted/updated times, and any user-visible response. It never contains Admin notes, matched-account details, user IDs, or security information.
 
@@ -188,9 +196,11 @@ npm ci
 npm run build
 ```
 
-Backend tests cover UTF-8 password boundaries and hash stability; both email concepts and login isolation; public support submission/status privacy and cooldown; Admin-only listing, updates, account unlock, and audit events; migration/bootstrap expectations; all workflow role boundaries; ownership; assignments; transitions; correction/resubmission; payment/inspection restrictions; immutable history; lockout; CSRF; token tampering; session expiry/revocation; and logout.
+Backend tests cover UTF-8 password boundaries and hash stability; both email concepts and login isolation; public support submission/status privacy and cooldown; Admin-only listing, updates, account unlock, and audit events; migration/bootstrap expectations; all workflow role boundaries; ownership; assignments; transitions; correction/resubmission; payment/inspection restrictions; immutable history; lockout; CSRF; token tampering; idle/absolute session expiry, revocation and logout. New engine cases additionally exercise concurrent writes, failure injection, documents, notifications, routing and report filters.
 
-## Safe local demonstration-data reset
+## Historical demonstration reset script
+
+**Do not run this old reset script after V8.** Append-only evidence triggers now prevent removal of protected history. Use a separate isolated demonstration database instead.
 
 [`scripts/reset-local-demo-data.sql`](scripts/reset-local-demo-data.sql) is destructive and must be invoked manually. It aborts unless the connected database is named `permits`, the PostgreSQL server is local loopback, and exactly one enabled, unlocked Admin exists. It runs in one transaction, removes child workflow records before parents, removes every non-Admin account and its sessions, deletes demonstration support requests and related audit events, and verifies that exactly one Admin remains. It never updates the Admin row or `flyway_schema_history`.
 
@@ -219,6 +229,41 @@ The script prints the counts scheduled for removal. This deletes local demo acco
 - **Cookies not sent:** use the configured exact origin and do not mix `localhost` with `127.0.0.1`.
 - **Admin password changed in `.env` but login did not:** bootstrap credentials are used only when `app_users` is empty.
 
+## Sprint 2 implementation and current local session
+
+The running demonstration is at **http://localhost:5174**, with backend at **http://localhost:8080**. Port 5173 belongs to another project and was preserved. The backend uses `ALLOWED_ORIGIN=http://localhost:5174`. Set the allowed origin and Vite port together when choosing a nondefault port.
+
+From the repository root, after packaging and with private credentials configured:
+
+```powershell
+$env:ALLOWED_ORIGIN='http://localhost:5174'
+python scripts/local_review.py start
+```
+
+In another terminal from `frontend`:
+
+```powershell
+node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --configLoader runner
+```
+
+Do not start duplicate processes on occupied ports. The local helper reads environment variables or the existing trusted IntelliJ configuration without printing secrets, starts `backend/target-review/permit-engine1-1.0.0.jar`, and records its PID locally.
+
+E4 now owns assignment through `AssignmentEngine`. Admin or Department Officer configures explicit officer role/type/zone/stage profiles. `*` is an explicit wildcard. A PriorityQueue selects minimum unfinished active workload, then lowest officer ID; a database mutex serializes allocation decisions. No eligible officer creates queued work and a Department Officer notification. Replacement requires confirmation and a reason; previous/new officers are audited. Optional SLA hours determine overdue flags; absent SLA is shown as unconfigured. Report date filters use permit creation dates in UTC.
+
+New APIs: `POST /api/permits/{id}/auto-assignment/{type}`, `POST /api/permits/{id}/override/{type}`, `GET /api/reports/workload?from=&to=&permitType=`, `GET/POST /api/routing/profiles`, `GET /api/notifications`, `POST /api/notifications/{id}/read`, `GET /api/audit`, and `GET /api/reference/analytics`. Managers are Admin or Department Officer; audit listing is Admin-only. Existing permit review/payment permissions remain unchanged.
+
+Sessions now expire after 30 minutes idle and eight hours absolutely. `POST /api/auth/activity` and successful mutations refresh idle time; GET polling does not. Real frontend pointer/key input triggers activity at most once per minute. Each mutation reads the current CSRF cookie and refreshes it if missing. Short nonblank wrong passwords return 401 and count toward lockout; locked login returns 423. New/reset passwords still require 8-72 UTF-8 bytes.
+
+Notifications persist with recipient isolation and read status. Local SMS returns `MOCK_NOT_SENT`; provider failures preserve in-app delivery. Could Not Complete inspections require observations, permit rescheduling and cannot close a project. Resubmission requires actual changed content or a new document file version.
+
+Document APIs: `GET/POST /api/permits/{id}/documents/files` and `GET /api/permits/{id}/documents/files/{versionId}`. Owner-only uploads are allowed in draft/correction stages. Downloads use existing permit visibility. Safe filenames, PDF/PNG/JPEG signatures, a 5 MB limit, attachment disposition and nosniff apply. Immutable database versions retain bytes as base64, SHA-256, owner and time; file checks do not replace malware scanning.
+
+V1-V5 remain unchanged. V6 restores required `last_activity`, backfilling legacy nulls from `created_at`. V7 adds routing, queue, notification, audit/document records and snapshot zone. V8 blocks UPDATE/DELETE/TRUNCATE of audit_log, workflow_history and document_versions on PostgreSQL. Superusers can disable protections; use a restricted runtime database role before deployment.
+
+CSV records never become operational credentials or permits. `python scripts/stage_reference.py --archive '<original ZIP path>'` creates isolated SQLite reference data and sanitized JSON summaries. Ambiguous Inspection Officer rows and dependent references are quarantined; REFERENCE categories retain ambiguous workflow mappings. No official Chicago provenance or referenced document binaries are claimed.
+
+Verification: `mvn -B -Dpermit.build.directory=target-review verify`; `python scripts/local_review.py isolated-tests`; `python -m unittest discover -s scripts -p test_stage_reference.py -v`; frontend Vite production build. See FINAL_TEST_RESULTS.md, DATABASE_VERIFICATION.md, ENGINE_READINESS.md and review_evidence/ for actual outcomes and individual guides.
+
 ## Remaining prototype limitations
 
-Supporting documents are references/names rather than uploaded binary files. Payment is intentionally simulated. Automated password reset, outbound email/SMS, production TLS, malware scanning, and database-role-level prevention of direct history-table modification remain outside this academic prototype. Admin handles verified support follow-up manually. The application API exposes no update/delete operation for historical reviews, versions, corrections, or workflow history.
+Supporting documents can now be uploaded as immutable PDF/PNG/JPEG byte versions; old reference strings are retained separately. Payment is intentionally simulated. Automated password reset, real outbound email/SMS, production TLS and malware scanning remain outside this academic prototype. Admin handles verified support follow-up manually. The application API exposes no update/delete operation for historical reviews, versions, corrections, or workflow history.

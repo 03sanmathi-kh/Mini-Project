@@ -9,18 +9,23 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 @Service
 public class AdminService {
- final Users users;final Sessions sessions;final Events events;final PasswordEncoder encoder;
- public AdminService(Users u,Sessions s,Events e,PasswordEncoder p){users=u;sessions=s;events=e;encoder=p;}
+ final Users users;final Sessions sessions;final Events events;final PasswordEncoder encoder;final RegistrationIdentityGuard registrationIdentity;
+ public AdminService(Users u,Sessions s,Events e,PasswordEncoder p,RegistrationIdentityGuard identity){users=u;sessions=s;events=e;encoder=p;registrationIdentity=identity;}
  @Transactional public Dtos.UserView create(Dtos.CreateUser d,Long actor){
+  registrationIdentity.lock();
   String email=PermitEmails.fromLocalPart(d.localPart());
   if(users.existsByEmailIgnoreCase(email))throw new ResponseStatusException(HttpStatus.CONFLICT,"Email address already exists.");
   Passwords.require(d.password());
   String personalEmail=PermitEmails.normalizePersonal(d.personalContactEmail());
+  registrationIdentity.available(personalEmail,null,null);
   AppUser u=users.save(new AppUser(d.fullName().trim(),email,personalEmail,encoder.encode(d.password()),d.role()));
   events.save(new SecurityEvent(actor,"USER_CREATED",u.id));return Dtos.UserView.of(u);
  }
  @Transactional public Dtos.UserView update(Long id,Dtos.UpdateUser d,Long actor){
+  registrationIdentity.lock();
   AppUser u=users.lockById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found."));
+  if(u.activationPending&&d.enabled())throw new ResponseStatusException(HttpStatus.CONFLICT,"Pending accounts must complete private activation before being enabled.");
+  if(d.personalContactEmail()!=null&&!d.personalContactEmail().isBlank())registrationIdentity.available(PermitEmails.normalizePersonal(d.personalContactEmail()),id,null);
   if(id.equals(actor)&&(!d.enabled()||d.role()!=Role.ADMIN))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cannot disable yourself or remove your own Admin role.");
   boolean revoke=u.role!=d.role()||u.enabled!=d.enabled();
   u.fullName=d.fullName().trim();u.personalContactEmail=d.personalContactEmail()==null||d.personalContactEmail().isBlank()?null:PermitEmails.normalizePersonal(d.personalContactEmail());u.role=d.role();u.enabled=d.enabled();u.updatedAt=Instant.now();
@@ -34,6 +39,7 @@ public class AdminService {
  }
  @Transactional public Dtos.UserView enable(Long id,Long actor){
   AppUser u=users.lockById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found."));
+  if(u.activationPending)throw new ResponseStatusException(HttpStatus.CONFLICT,"Pending accounts must complete private activation before being enabled.");
   u.enabled=true;u.updatedAt=Instant.now();sessions.revokeForUser(id);
   events.save(new SecurityEvent(actor,"ACCOUNT_ENABLED",id));return Dtos.UserView.of(u);
  }
