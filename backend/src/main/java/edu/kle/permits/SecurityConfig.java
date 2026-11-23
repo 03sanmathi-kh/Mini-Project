@@ -37,7 +37,7 @@ public class SecurityConfig {
   return http.cors(c->{}).csrf(c->c.csrfTokenRepository(csrf).csrfTokenRequestHandler(handler))
    .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
    .formLogin(f->f.disable()).httpBasic(b->b.disable())
-   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/csrf","/api/auth/login","/api/support","/api/support/status","/api/registrations","/api/registrations/roles","/api/registrations/status","/api/registrations/activate").permitAll()
+   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/csrf","/api/auth/login","/api/support","/api/support/status","/api/registrations","/api/registrations/roles","/api/registrations/status").permitAll()
     .requestMatchers("/api/admin/**","/swagger-ui/**","/v3/api-docs/**").hasRole("ADMIN")
     .requestMatchers("/api/**").authenticated().anyRequest().denyAll())
    .exceptionHandling(e->e.authenticationEntryPoint((q,r,x)->{r.setStatus(401);r.setContentType("application/json");r.getWriter().write("{\"message\":\"Please log in. Your session may have expired.\"}");})

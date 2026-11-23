@@ -17,7 +17,7 @@ interface RegistrationMutexes extends JpaRepository<RegistrationMutex,Long> {
 }
 interface RegistrationRequests extends JpaRepository<RegistrationRequest,Long> {
  Optional<RegistrationRequest> findByActiveEmail(String email);
- Optional<RegistrationRequest> findByTrackingHashAndPersonalEmail(String hash,String email);
+ List<RegistrationRequest> findByPersonalEmailOrderBySubmittedAtDesc(String email);
  @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select r from RegistrationRequest r where r.id=:id") Optional<RegistrationRequest> lockById(@Param("id")Long id);
  Page<RegistrationRequest> findByStatus(RegistrationStatus status,Pageable page);
 }

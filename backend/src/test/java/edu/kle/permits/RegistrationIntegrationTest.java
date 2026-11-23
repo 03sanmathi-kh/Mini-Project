@@ -3,6 +3,7 @@ package edu.kle.permits;
 import com.fasterxml.jackson.databind.*;
 import jakarta.servlet.http.Cookie;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,79 +23,151 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
+/** Two-credential registration: registration credentials only check status; Admin-created credentials log in. */
 @SpringBootTest(properties={
  "spring.datasource.url=${TEST_DB_URL:jdbc:h2:mem:registration;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=15000}",
  "spring.datasource.driver-class-name=${TEST_DB_DRIVER:org.h2.Driver}","spring.datasource.username=${TEST_DB_USER:sa}","spring.datasource.password=${TEST_DB_PASSWORD:}",
  "app.jwt-secret=test-secret-with-at-least-thirty-two-bytes-long","app.admin-password=InitialAdminPassword!","app.admin-local-part=admin"})
 @AutoConfigureMockMvc class RegistrationIntegrationTest {
- @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired RegistrationService service;@Autowired RegistrationRequests requests;@Autowired Users users;@Autowired PasswordEncoder encoder;@Autowired Sessions sessions;@Autowired JdbcTemplate jdbc;@Autowired AdminService adminService;
+ @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired RegistrationService service;@Autowired RegistrationRequests requests;@Autowired Users users;@Autowired PasswordEncoder encoder;@Autowired JdbcTemplate jdbc;
  @MockitoBean Clock clock;
- final Instant now=Instant.parse("2026-11-23T12:00:00Z");static final AtomicInteger address=new AtomicInteger();
- static final String PASSWORD="RegistrationPass!";AppUser admin,member;
- @BeforeEach void setup(){when(clock.instant()).thenReturn(now);admin=users.findByEmail("admin@permitworks.com").orElseThrow();admin.enabled=true;admin.activationPending=false;admin.locked=false;admin.failedAttempts=0;users.save(admin);member=users.findByEmail("registration-existing@permitworks.com").orElseGet(()->users.save(new AppUser("Existing Member","registration-existing@permitworks.com","existing-registration@example.test",encoder.encode(PASSWORD),Role.APPLICANT)));member.enabled=true;member.activationPending=false;member.locked=false;member.failedAttempts=0;member.role=Role.APPLICANT;users.save(member);}
- String email(){return UUID.randomUUID()+"@example.test";}
- String ip(){int n=address.incrementAndGet();return "10.71."+(n/250)+"."+(n%250+1);}
- Map<String,Object> input(String email,Role role){return new HashMap<>(Map.of("fullName","Alex Example","personalEmail",email,"phone","+44 (20) 1234-5678","requestedRole",role.name(),"description","Guide-requested isolated test access"));}
+ // Real current time: JWT expiry is validated against the system clock.
+ final Instant now=Instant.now().truncatedTo(ChronoUnit.SECONDS);static final AtomicInteger address=new AtomicInteger();static final AtomicInteger seq=new AtomicInteger();
+ static final String REG_PASSWORD="RegisterMe#2026",LOGIN_PASSWORD="LoginPass#9876",MEMBER_PASSWORD="ExistingMember#1";AppUser admin,member;
+ @BeforeEach void setup(){when(clock.instant()).thenReturn(now);admin=users.findByEmail("admin@permitworks.com").orElseThrow();admin.enabled=true;admin.activationPending=false;admin.locked=false;admin.failedAttempts=0;users.save(admin);member=users.findByEmail("registration-existing@permitworks.com").orElseGet(()->users.save(new AppUser("Existing Member","registration-existing@permitworks.com","existing-registration@example.test",encoder.encode(MEMBER_PASSWORD),Role.APPLICANT)));member.enabled=true;member.activationPending=false;member.locked=false;member.failedAttempts=0;member.role=Role.APPLICANT;users.save(member);}
+ String email(){return "applicant-"+UUID.randomUUID()+"@example.test";}
+ String loginEmail(){return "pw-user-"+seq.incrementAndGet()+"-"+UUID.randomUUID().toString().substring(0,8)+"@permitworks.com";}
+ String ip(){int n=address.incrementAndGet();return "10.72."+(n/250)+"."+(n%250+1);}
+ Map<String,Object> input(String email,String role){return new HashMap<>(Map.of("fullName","Alex Example","personalEmail",email,"registrationPassword",REG_PASSWORD,"confirmRegistrationPassword",REG_PASSWORD,"phone","9876543210","requestedRole",role,"description","Needs applicant access"));}
  MockHttpServletRequestBuilder postJson(String path,Object body,String source)throws Exception{return post(path).with(csrf()).with(r->{r.setRemoteAddr(source);return r;}).contentType("application/json").content(json.writeValueAsString(body));}
- record Credentials(String email,String tracking,String secret,Long id){}
- Credentials submit(String email,Role role)throws Exception{
-  var response=mvc.perform(postJson("/api/registrations",input(email,role),ip())).andExpect(status().isCreated()).andReturn();JsonNode n=json.readTree(response.getResponse().getContentAsString());String track=n.get("trackingCode").asText(),secret=n.get("activationSecret").asText();RegistrationRequest request=requests.findByTrackingHashAndPersonalEmail(RegistrationRateLimiter.digest(track),email.trim().toLowerCase(Locale.ROOT)).orElseThrow();return new Credentials(email,track,secret,request.id);
- }
+ Long submit(String email,String role)throws Exception{mvc.perform(postJson("/api/registrations",input(email,role),ip())).andExpect(status().isCreated()).andExpect(jsonPath("$.trackingCode").doesNotExist()).andExpect(jsonPath("$.activationSecret").doesNotExist());return requests.findByPersonalEmailOrderBySubmittedAtDesc(email.trim().toLowerCase(Locale.ROOT)).get(0).id;}
  Cookie login(String email,String password)throws Exception{return mvc.perform(postJson("/api/auth/login",Map.of("email",email,"password",password),ip())).andExpect(status().isOk()).andReturn().getResponse().getCookie("PERMIT_TOKEN");}
- Map<String,String> lookup(Credentials c){return Map.of("personalEmail",c.email,"trackingCode",c.tracking);}
- Map<String,String> activation(Credentials c,String secret,String password){return new HashMap<>(Map.of("personalEmail",c.email,"trackingCode",c.tracking,"activationSecret",secret,"newPassword",password,"confirmPassword",password));}
- RegistrationDtos.AdminView approve(Credentials c){return service.approve(c.id,new RegistrationDtos.Approve(Role.APPLICANT,true),admin);}
- RegistrationDtos.Activated activate(Credentials c){return service.activate(new RegistrationDtos.Activate(c.email,c.tracking,c.secret,PASSWORD,PASSWORD));}
+ Cookie adminToken()throws Exception{return login(admin.email,"InitialAdminPassword!");}
+ Map<String,Object> approval(String role,String login,String password){return new HashMap<>(Map.of("approvedRole",role,"loginEmail",login,"loginPassword",password,"confirmLoginPassword",password,"confirm",true));}
+ ResultActions checkStatus(String email,String password)throws Exception{return mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",email,"registrationPassword",password),ip()));}
 
- @Test void TC_REG_01_validSubmissionUsesIndependentRandomCredentialsAndHashes()throws Exception{
-  Credentials c=submit(email(),Role.APPLICANT);assertTrue(c.tracking.matches("PWREG-[A-Za-z0-9_-]{32}"));assertTrue(c.secret.matches("[A-Za-z0-9_-]{43}"));assertFalse(c.secret.equals(c.tracking));var r=requests.findById(c.id).orElseThrow();assertEquals(64,r.trackingHash.length());assertEquals(64,r.activationHash.length());assertFalse(r.activationHash.equals(c.secret));assertEquals("+442012345678",r.phone);assertNull(r.userId);
+ @Test void T01_T02_T07_validRegistrationWithTenDigitPhoneIsPendingWithoutAccount()throws Exception{
+  long before=users.count();String e=email();Long id=submit(e,"APPLICANT");RegistrationRequest r=requests.findById(id).orElseThrow();
+  assertEquals(RegistrationStatus.PENDING,r.status);assertEquals("9876543210",r.phone);assertNull(r.userId);assertNull(r.trackingHash);assertEquals(before,users.count());
  }
- @Test void TC_REG_02_missingFieldsAndUnknownRoleReturn400()throws Exception{
-  mvc.perform(postJson("/api/registrations",Map.of(),ip())).andExpect(status().isBadRequest());var d=input(email(),Role.APPLICANT);d.put("requestedRole","SUPER_ADMIN");mvc.perform(postJson("/api/registrations",d,ip())).andExpect(status().isBadRequest());
+ @Test void T03_invalidPhonesRejected()throws Exception{
+  for(String phone:List.of("12345","98765432101","98765abcde","+919876543210","987 654 3210","")){var d=input(email(),"APPLICANT");d.put("phone",phone);mvc.perform(postJson("/api/registrations",d,ip())).andExpect(status().isBadRequest());}
  }
- @Test void TC_REG_03_invalidEmailRejectedAndPersonalDomainAccepted()throws Exception{
-  var d=input("malformed",Role.APPLICANT);mvc.perform(postJson("/api/registrations",d,ip())).andExpect(status().isBadRequest());Credentials c=submit("  "+email().toUpperCase(Locale.ROOT)+"  ",Role.APPLICANT);assertEquals(c.email.trim().toLowerCase(Locale.ROOT),requests.findById(c.id).orElseThrow().personalEmail);
+ @Test void T04_adminAbsentFromPublicRoleList()throws Exception{
+  String body=mvc.perform(get("/api/registrations/roles")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+  assertFalse(body.contains("\"ADMIN\""));assertTrue(body.contains("\"APPLICANT\""));
  }
- @Test void TC_REG_04_invalidPhonesRejected()throws Exception{for(String phone:List.of("abc-phone","+12","+1234567890123456")){var d=input(email(),Role.APPLICANT);d.put("phone",phone);mvc.perform(postJson("/api/registrations",d,ip())).andExpect(status().isBadRequest());}}
- @Test void TC_REG_05_duplicatePendingRegistrationRejectedCaseInsensitively()throws Exception{Credentials c=submit(email(),Role.APPLICANT);mvc.perform(postJson("/api/registrations",input(c.email.toUpperCase(Locale.ROOT),Role.ADMIN),ip())).andExpect(status().isConflict());}
- @Test void TC_REG_06_duplicateExistingAccountRejected()throws Exception{mvc.perform(postJson("/api/registrations",input(member.personalContactEmail,Role.APPLICANT),ip())).andExpect(status().isConflict());mvc.perform(postJson("/api/registrations",input(member.email,Role.APPLICANT),ip())).andExpect(status().isConflict());}
- @Test void TC_REG_07_initiallyPendingAndDoesNotCreateAccount()throws Exception{long count=users.count();Credentials c=submit(email(),Role.ADMIN);assertEquals(RegistrationStatus.PENDING,requests.findById(c.id).orElseThrow().status);assertEquals(count,users.count());}
- @Test void TC_REG_08_statusLookupRequiresEmailAndTrackingWithoutInternalDisclosure()throws Exception{
-  Credentials c=submit(email(),Role.APPLICANT);var result=mvc.perform(postJson("/api/registrations/status",lookup(c),ip())).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PENDING")).andExpect(jsonPath("$.id").doesNotExist()).andExpect(jsonPath("$.reviewedBy").doesNotExist()).andExpect(jsonPath("$.activationSecret").doesNotExist()).andReturn();
-  var wrong=mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",email(),"trackingCode",c.tracking),ip())).andExpect(status().isNotFound()).andReturn();
-  var absent=mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",c.email,"trackingCode","PWREG-"+"A".repeat(32)),ip())).andExpect(status().isNotFound()).andReturn();assertEquals(wrong.getResponse().getContentAsString(),absent.getResponse().getContentAsString());
+ @Test void T05_adminAndUnknownRolesRejectedByBackend()throws Exception{
+  long before=requests.count();mvc.perform(postJson("/api/registrations",input(email(),"ADMIN"),ip())).andExpect(status().isBadRequest());mvc.perform(postJson("/api/registrations",input(email(),"SUPER_ADMIN"),ip())).andExpect(status().isBadRequest());assertEquals(before,requests.count());
  }
- @Test void TC_REG_09_adminApprovalCreatesOnlyPendingActivationAccountAndAudit()throws Exception{
-  Credentials c=submit(email(),Role.PERMIT_REVIEWER);Cookie token=login(admin.email,"InitialAdminPassword!");mvc.perform(postJson("/api/admin/registrations/"+c.id+"/approve",Map.of("approvedRole","APPLICANT","confirm",true),ip()).cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("APPROVED"));var r=requests.findById(c.id).orElseThrow();var u=users.findById(r.userId).orElseThrow();assertTrue(u.activationPending);assertFalse(u.enabled);assertEquals(Role.APPLICANT,u.role);assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE entity_type='registration' AND entity_id=? AND action='REGISTRATION_APPROVED'",Long.class,c.id));
+ @Test void T06_registrationPasswordStoredAsBCryptOnly()throws Exception{
+  Long id=submit(email(),"APPLICANT");String hash=requests.findById(id).orElseThrow().registrationPasswordHash;assertTrue(hash.startsWith("$2"));assertNotEquals(REG_PASSWORD,hash);assertTrue(encoder.matches(REG_PASSWORD,hash));
  }
- @Test void TC_REG_10_adminRejectionRecordsReasonWithoutCreatingAccount()throws Exception{
-  Credentials c=submit(email(),Role.APPLICANT);long count=users.count();Cookie token=login(admin.email,"InitialAdminPassword!");mvc.perform(postJson("/api/admin/registrations/"+c.id+"/reject",Map.of("reason","Identity requires review","confirm",true),ip()).cookie(token)).andExpect(status().isOk());assertEquals(count,users.count());assertNull(requests.findById(c.id).orElseThrow().activationHash);mvc.perform(postJson("/api/registrations/status",lookup(c),ip())).andExpect(status().isOk()).andExpect(jsonPath("$.rejectionReason").value("Identity requires review"));
+ @Test void weakOrMismatchedRegistrationPasswordRejected()throws Exception{
+  var weak=input(email(),"APPLICANT");weak.put("registrationPassword","alllowercase");weak.put("confirmRegistrationPassword","alllowercase");mvc.perform(postJson("/api/registrations",weak,ip())).andExpect(status().isBadRequest());
+  var mismatch=input(email(),"APPLICANT");mismatch.put("confirmRegistrationPassword","Different#2026");mvc.perform(postJson("/api/registrations",mismatch,ip())).andExpect(status().isBadRequest());
+  var missing=input(email(),"APPLICANT");missing.remove("confirmRegistrationPassword");mvc.perform(postJson("/api/registrations",missing,ip())).andExpect(status().isBadRequest());
  }
- @Test void TC_REG_11_nonAdminApprovalDenied()throws Exception{Credentials c=submit(email(),Role.APPLICANT);Cookie token=login(member.email,PASSWORD);mvc.perform(postJson("/api/admin/registrations/"+c.id+"/approve",Map.of("approvedRole","ADMIN","confirm",true),ip()).cookie(token)).andExpect(status().isForbidden());assertEquals(RegistrationStatus.PENDING,requests.findById(c.id).orElseThrow().status);}
- @Test void TC_REG_12_requestedAndInjectedPrivilegedRoleNeverSelfGranted()throws Exception{
-  Credentials c=submit(email(),Role.ADMIN);approve(c);var body=activation(c,c.secret,PASSWORD);body.put("approvedRole","ADMIN");body.put("role","ADMIN");mvc.perform(postJson("/api/registrations/activate",body,ip())).andExpect(status().isOk());Cookie token=login(users.findById(requests.findById(c.id).orElseThrow().userId).orElseThrow().email,PASSWORD);mvc.perform(get("/api/auth/me").cookie(token)).andExpect(jsonPath("$.role").value("APPLICANT"));mvc.perform(get("/api/admin/registrations").cookie(token)).andExpect(status().isForbidden());
+ @Test void T08_T09_statusCheckUsesPersonalEmailAndRegistrationPasswordWithGenericErrors()throws Exception{
+  String e=email();submit(e,"APPLICANT");
+  checkStatus(e,REG_PASSWORD).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PENDING")).andExpect(jsonPath("$.message").value("Registration awaiting Admin approval.")).andExpect(jsonPath("$.loginEmail").doesNotExist()).andExpect(jsonPath("$.id").doesNotExist());
+  String wrong=checkStatus(e,"WrongPass#2026").andExpect(status().isUnauthorized()).andReturn().getResponse().getContentAsString();
+  String unknown=checkStatus(email(),REG_PASSWORD).andExpect(status().isUnauthorized()).andReturn().getResponse().getContentAsString();
+  assertEquals(wrong,unknown);
+  mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",e,"trackingCode","PWREG-x"),ip())).andExpect(status().isBadRequest());
  }
- @Test void TC_REG_13_pendingActivationAccountCannotLogin()throws Exception{Credentials c=submit(email(),Role.APPLICANT);var approved=approve(c);mvc.perform(postJson("/api/auth/login",Map.of("email",approved.loginEmail(),"password",PASSWORD),ip())).andExpect(status().isUnauthorized());assertTrue(sessions.findAll().stream().noneMatch(s->s.userId.equals(requests.findById(c.id).orElseThrow().userId)));}
- @Test void TC_REG_14_rejectedRequestCannotActivateOrCreateLogin()throws Exception{Credentials c=submit(email(),Role.APPLICANT);service.reject(c.id,new RegistrationDtos.Reject("Not eligible",true),admin);mvc.perform(postJson("/api/registrations/activate",activation(c,c.secret,PASSWORD),ip())).andExpect(status().isForbidden());assertNull(requests.findById(c.id).orElseThrow().userId);mvc.perform(postJson("/api/auth/login",Map.of("email","reg-not-created@permitworks.com","password",PASSWORD),ip())).andExpect(status().isUnauthorized());}
- @Test void TC_REG_15_approvedAccountCanSetPasswordAndBecomesActivated()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);mvc.perform(postJson("/api/registrations/activate",activation(c,c.secret,PASSWORD),ip())).andExpect(status().isOk());var r=requests.findById(c.id).orElseThrow();assertEquals(RegistrationStatus.ACTIVATED,r.status);assertNotNull(r.activatedAt);assertNull(r.activationHash);assertFalse(users.findById(r.userId).orElseThrow().activationPending);}
- @Test void TC_REG_16_passwordStoredAsVerifiableBCryptOnly()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);activate(c);var u=users.findById(requests.findById(c.id).orElseThrow().userId).orElseThrow();assertTrue(u.passwordHash.startsWith("$2"));assertNotEquals(PASSWORD,u.passwordHash);assertTrue(encoder.matches(PASSWORD,u.passwordHash));}
- @Test void TC_REG_17_activationSecretSingleUse()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);activate(c);String hash=users.findById(requests.findById(c.id).orElseThrow().userId).orElseThrow().passwordHash;mvc.perform(postJson("/api/registrations/activate",activation(c,c.secret,"DifferentPassword!"),ip())).andExpect(status().isForbidden());assertEquals(hash,users.findById(requests.findById(c.id).orElseThrow().userId).orElseThrow().passwordHash);}
- @Test void TC_REG_18_wrongPrivateSecretRejectedAndTrackingAloneCannotActivate()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);String wrong=(c.secret.charAt(0)=='A'?"B":"A")+c.secret.substring(1);mvc.perform(postJson("/api/registrations/activate",activation(c,wrong,PASSWORD),ip())).andExpect(status().isForbidden());var body=activation(c,c.secret,PASSWORD);body.remove("activationSecret");mvc.perform(postJson("/api/registrations/activate",body,ip())).andExpect(status().isBadRequest());assertEquals(RegistrationStatus.APPROVED,requests.findById(c.id).orElseThrow().status);}
- @Test void TC_REG_19_loginAfterActivationUsesExistingJwtAndLogoutRevocation()throws Exception{Credentials c=submit(email(),Role.APPLICANT);String login=approve(c).loginEmail();activate(c);Cookie token=login(login,PASSWORD);assertNotNull(token);assertTrue(token.isHttpOnly());mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("APPLICANT"));mvc.perform(post("/api/auth/logout").with(csrf()).cookie(token)).andExpect(status().isOk());mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isUnauthorized());}
- @Test void TC_REG_20_existingLoginUnaffected()throws Exception{Cookie token=login(member.email,PASSWORD);mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.email").value(member.email));}
- @Test void TC_REG_21_existingHelpAndAdminSupportPreserved()throws Exception{var body=Map.of("fullName","Existing Support","personalContactEmail",email(),"category","OTHER","subject","Registration test support","description","Independent support functionality remains available");mvc.perform(postJson("/api/support",body,ip())).andExpect(status().isOk()).andExpect(jsonPath("$.ticketNumber").exists());mvc.perform(get("/api/admin/support").cookie(login(admin.email,"InitialAdminPassword!"))).andExpect(status().isOk());}
- @Test void TC_REG_22_unrelatedRecordsAndAppliedMigrationsPreserved()throws Exception{String hash=member.passwordHash;long usersBefore=users.count(),permits=jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class),history=jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class),support=jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class);Credentials c=submit(email(),Role.APPLICANT);service.reject(c.id,new RegistrationDtos.Reject("Isolated rejected fixture",true),admin);assertEquals(usersBefore,users.count());assertEquals(hash,users.findById(member.id).orElseThrow().passwordHash);assertEquals(permits,jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class));assertEquals(history,jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class));assertEquals(support,jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class));assertEquals(10,jdbc.queryForObject("SELECT count(*) FROM \"flyway_schema_history\" WHERE \"success\"=TRUE AND \"version\" IS NOT NULL",Long.class));}
- @Test void TC_REG_23_concurrentApprovalCreatesOneAccountAndOneAudit()throws Exception{Credentials c=submit(email(),Role.APPLICANT);long before=users.count();var outcomes=parallel(()->tryApprove(c),()->tryApprove(c));assertEquals(1,outcomes.stream().filter(Boolean::booleanValue).count());assertEquals(before+1,users.count());assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action='REGISTRATION_APPROVED' AND entity_type='registration' AND entity_id=?",Long.class,c.id));}
- boolean tryApprove(Credentials c){try{approve(c);return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
- @Test void TC_REG_24_adminListingRequiresAdminAndNeverReturnsCredentialHashes()throws Exception{mvc.perform(get("/api/admin/registrations")).andExpect(status().isUnauthorized());mvc.perform(get("/api/admin/registrations").cookie(login(member.email,PASSWORD))).andExpect(status().isForbidden());var response=mvc.perform(get("/api/admin/registrations").cookie(login(admin.email,"InitialAdminPassword!"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();assertFalse(response.contains("trackingHash"));assertFalse(response.contains("activationHash"));assertFalse(response.contains("activationSecret"));}
- @Test void TC_REG_25_registrationAndLookupRateLimitsPersistFailedAttempts()throws Exception{String source=ip();for(int i=0;i<5;i++)mvc.perform(postJson("/api/registrations",input(email(),Role.APPLICANT),source)).andExpect(status().isCreated());mvc.perform(postJson("/api/registrations",input(email(),Role.APPLICANT),source)).andExpect(status().isTooManyRequests());String lookupSource=ip();var invalid=Map.of("personalEmail",email(),"trackingCode","PWREG-"+"A".repeat(32));for(int i=0;i<30;i++)mvc.perform(postJson("/api/registrations/status",invalid,lookupSource)).andExpect(status().isNotFound());mvc.perform(postJson("/api/registrations/status",invalid,lookupSource)).andExpect(status().isTooManyRequests());when(clock.instant()).thenReturn(now.plusSeconds(3600));mvc.perform(postJson("/api/registrations",input(email(),Role.APPLICANT),source)).andExpect(status().isCreated());}
- @Test void TC_REG_27_activationExpiresAtExactSevenDayBoundary()throws Exception{Credentials a=submit(email(),Role.APPLICANT),b=submit(email(),Role.APPLICANT);approve(a);approve(b);when(clock.instant()).thenReturn(now.plusSeconds(7*86400-1));assertNotNull(activate(a));when(clock.instant()).thenReturn(now.plusSeconds(7*86400));mvc.perform(postJson("/api/registrations/activate",activation(b,b.secret,PASSWORD),ip())).andExpect(status().isForbidden());}
- @Test void TC_REG_28_confirmationAndUtf8PasswordBoundariesEnforced()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);var d=activation(c,c.secret,"1234567");mvc.perform(postJson("/api/registrations/activate",d,ip())).andExpect(status().isBadRequest());d=activation(c,c.secret,"é".repeat(37));mvc.perform(postJson("/api/registrations/activate",d,ip())).andExpect(status().isBadRequest());d=activation(c,c.secret,PASSWORD);d.put("confirmPassword","NotMatching!");mvc.perform(postJson("/api/registrations/activate",d,ip())).andExpect(status().isBadRequest());mvc.perform(postJson("/api/registrations/activate",activation(c,c.secret,"a".repeat(72)),ip())).andExpect(status().isOk());}
- @Test void TC_REG_29_adminEnableCannotBypassPrivateActivation()throws Exception{Credentials c=submit(email(),Role.APPLICANT);var approved=approve(c);Long userId=requests.findById(c.id).orElseThrow().userId;assertThrows(ResponseStatusException.class,()->adminService.enable(userId,admin.id));AppUser u=users.findById(userId).orElseThrow();u.enabled=true;u.passwordHash=encoder.encode(PASSWORD);users.save(u);mvc.perform(postJson("/api/auth/login",Map.of("email",approved.loginEmail(),"password",PASSWORD),ip())).andExpect(status().isUnauthorized());}
- @Test void TC_REG_30_simultaneousDuplicateSubmissionAdmitsOneRequest()throws Exception{String personal=email();long before=requests.count();var r=parallel(()->trySubmit(personal),()->trySubmit(personal));assertEquals(1,r.stream().filter(Boolean::booleanValue).count());assertEquals(before+1,requests.count());}
- boolean trySubmit(String email){try{service.submit(new RegistrationDtos.Submit("Concurrent Applicant",email,"+442012345678",Role.APPLICANT,"Isolated test"));return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
- @Test void TC_REG_31_concurrentActivationOnlyConsumesSecretOnce()throws Exception{Credentials c=submit(email(),Role.APPLICANT);approve(c);var r=parallel(()->tryActivate(c),()->tryActivate(c));assertEquals(1,r.stream().filter(Boolean::booleanValue).count());assertEquals(RegistrationStatus.ACTIVATED,requests.findById(c.id).orElseThrow().status);}
- boolean tryActivate(Credentials c){try{activate(c);return true;}catch(ResponseStatusException e){assertEquals(403,e.getStatusCode().value());return false;}}
- @Test void TC_REG_32_publicMutationsStillRequireCsrfAndReviewRequiresConfirmation()throws Exception{mvc.perform(post("/api/registrations").contentType("application/json").content(json.writeValueAsString(input(email(),Role.APPLICANT)))).andExpect(status().isForbidden());Credentials c=submit(email(),Role.APPLICANT);Cookie adminToken=login(admin.email,"InitialAdminPassword!");mvc.perform(postJson("/api/admin/registrations/"+c.id+"/approve",Map.of("approvedRole","ADMIN","confirm",false),ip()).cookie(adminToken)).andExpect(status().isBadRequest());approve(c);assertThrows(ResponseStatusException.class,()->approve(c));assertThrows(ResponseStatusException.class,()->service.reject(c.id,new RegistrationDtos.Reject("Too late",true),admin));}
+ @Test void T10_registrationCredentialsCannotLogIn()throws Exception{
+  String e=email();submit(e,"APPLICANT");
+  int code=mvc.perform(postJson("/api/auth/login",Map.of("email",e,"password",REG_PASSWORD),ip())).andReturn().getResponse().getStatus();assertTrue(code==400||code==401);
+  String pwLooking="reg-only-"+UUID.randomUUID().toString().substring(0,8)+"@permitworks.com";submit(pwLooking,"APPLICANT");
+  mvc.perform(postJson("/api/auth/login",Map.of("email",pwLooking,"password",REG_PASSWORD),ip())).andExpect(status().isUnauthorized()).andExpect(cookie().doesNotExist("PERMIT_TOKEN"));
+ }
+ @Test void T11_nonAdminApprovalDenied()throws Exception{
+  Long id=submit(email(),"APPLICANT");Cookie token=login(member.email,MEMBER_PASSWORD);
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",loginEmail(),LOGIN_PASSWORD),ip()).cookie(token)).andExpect(status().isForbidden());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/reject",Map.of("reason","no","confirm",true),ip()).cookie(token)).andExpect(status().isForbidden());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",loginEmail(),LOGIN_PASSWORD),ip())).andExpect(status().isUnauthorized());
+  assertEquals(RegistrationStatus.PENDING,requests.findById(id).orElseThrow().status);
+ }
+ @Test void T12_to_T20_fullApprovalFlowWithSeparateCredentials()throws Exception{
+  String personal=email(),login=loginEmail();Long id=submit(personal,"PERMIT_REVIEWER");long before=users.count();Cookie adminCookie=adminToken();
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("PERMIT_REVIEWER",login,LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("APPROVED")).andExpect(jsonPath("$.loginEmail").value(login)).andExpect(jsonPath("$.registrationPasswordHash").doesNotExist());
+  RegistrationRequest r=requests.findById(id).orElseThrow();assertEquals(RegistrationStatus.APPROVED,r.status);assertNotNull(r.userId);assertEquals(before+1,users.count());
+  AppUser u=users.findById(r.userId).orElseThrow();assertEquals(login,u.email);assertEquals(Role.PERMIT_REVIEWER,u.role);assertTrue(u.enabled);assertFalse(u.activationPending);assertNull(u.personalContactEmail);
+  assertTrue(u.passwordHash.startsWith("$2"));assertTrue(encoder.matches(LOGIN_PASSWORD,u.passwordHash));assertFalse(encoder.matches(REG_PASSWORD,u.passwordHash));assertNotEquals(r.registrationPasswordHash,u.passwordHash);
+  assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE entity_type='registration' AND entity_id=? AND action='REGISTRATION_APPROVED'",Long.class,id));
+  checkStatus(personal,REG_PASSWORD).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("APPROVED")).andExpect(jsonPath("$.message").value("Registration approved. Contact Admin for your PermitWorks login credentials.")).andExpect(jsonPath("$.loginEmail").doesNotExist());
+  String statusBody=checkStatus(personal,REG_PASSWORD).andReturn().getResponse().getContentAsString();assertFalse(statusBody.contains(login));
+  Cookie token=login(login,LOGIN_PASSWORD);
+  mvc.perform(get("/api/auth/me").cookie(token)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("PERMIT_REVIEWER")).andExpect(jsonPath("$.email").value(login));
+  mvc.perform(get("/api/permits/dashboard").cookie(token)).andExpect(status().isOk());
+  mvc.perform(get("/api/admin/registrations").cookie(token)).andExpect(status().isForbidden());
+  int regLogin=mvc.perform(postJson("/api/auth/login",Map.of("email",personal,"password",REG_PASSWORD),ip())).andReturn().getResponse().getStatus();assertTrue(regLogin==400||regLogin==401);
+  mvc.perform(postJson("/api/auth/login",Map.of("email",login,"password",REG_PASSWORD),ip())).andExpect(status().isUnauthorized());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",loginEmail(),LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isConflict());
+ }
+ @Test void T14_T16_duplicateLoginEmailRejectedAndRequestStaysPending()throws Exception{
+  Long id=submit(email(),"APPLICANT");long before=users.count();Cookie adminCookie=adminToken();
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",member.email.toUpperCase(Locale.ROOT),LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isConflict());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",admin.email,LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isConflict());
+  RegistrationRequest r=requests.findById(id).orElseThrow();assertEquals(RegistrationStatus.PENDING,r.status);assertNull(r.userId);assertEquals(before,users.count());
+ }
+ @Test void approvalRejectsReusedRegistrationPasswordAdminRoleAndBadLoginInput()throws Exception{
+  Long id=submit(email(),"APPLICANT");Cookie adminCookie=adminToken();long before=users.count();
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",loginEmail(),REG_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("ADMIN",loginEmail(),LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT","someone@gmail.com",LOGIN_PASSWORD),ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",approval("APPLICANT",loginEmail(),"weakpassword"),ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  var mismatch=approval("APPLICANT",loginEmail(),LOGIN_PASSWORD);mismatch.put("confirmLoginPassword","Other#Pass2026");mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",mismatch,ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  var unconfirmed=approval("APPLICANT",loginEmail(),LOGIN_PASSWORD);unconfirmed.put("confirm",false);mvc.perform(postJson("/api/admin/registrations/"+id+"/approve",unconfirmed,ip()).cookie(adminCookie)).andExpect(status().isBadRequest());
+  assertEquals(RegistrationStatus.PENDING,requests.findById(id).orElseThrow().status);assertEquals(before,users.count());
+ }
+ @Test void T21_rejectedRegistrationShowsReasonAndCreatesNoLogin()throws Exception{
+  String personal=email();Long id=submit(personal,"APPLICANT");long before=users.count();
+  mvc.perform(postJson("/api/admin/registrations/"+id+"/reject",Map.of("reason","Identity could not be confirmed","confirm",true),ip()).cookie(adminToken())).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("REJECTED"));
+  assertEquals(before,users.count());RegistrationRequest r=requests.findById(id).orElseThrow();assertNull(r.userId);assertEquals("Identity could not be confirmed",r.rejectionReason);
+  checkStatus(personal,REG_PASSWORD).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("REJECTED")).andExpect(jsonPath("$.message").value("Registration rejected. Contact Admin for assistance.")).andExpect(jsonPath("$.rejectionReason").value("Identity could not be confirmed"));
+  int code=mvc.perform(postJson("/api/auth/login",Map.of("email",personal,"password",REG_PASSWORD),ip())).andReturn().getResponse().getStatus();assertTrue(code==400||code==401);
+  assertThrows(ResponseStatusException.class,()->service.approve(id,new RegistrationDtos.Approve(Role.APPLICANT,loginEmail(),LOGIN_PASSWORD,LOGIN_PASSWORD,true),admin));
+ }
+ @Test void T22_T23_existingAdminUsersPermitsAndSupportUnchanged()throws Exception{
+  String hash=users.findById(member.id).orElseThrow().passwordHash,adminHash=users.findById(admin.id).orElseThrow().passwordHash;
+  long permits=jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class),history=jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class),support=jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class);
+  Long id=submit(email(),"APPLICANT");service.approve(id,new RegistrationDtos.Approve(Role.APPLICANT,loginEmail(),LOGIN_PASSWORD,LOGIN_PASSWORD,true),admin);
+  Long rejected=submit(email(),"APPLICANT");service.reject(rejected,new RegistrationDtos.Reject("Isolated rejected fixture",true),admin);
+  assertEquals(hash,users.findById(member.id).orElseThrow().passwordHash);assertEquals(adminHash,users.findById(admin.id).orElseThrow().passwordHash);
+  assertEquals(permits,jdbc.queryForObject("SELECT count(*) FROM permit_applications",Long.class));assertEquals(history,jdbc.queryForObject("SELECT count(*) FROM workflow_history",Long.class));assertEquals(support,jdbc.queryForObject("SELECT count(*) FROM support_requests",Long.class));
+  mvc.perform(get("/api/auth/me").cookie(adminToken())).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
+  mvc.perform(get("/api/auth/me").cookie(login(member.email,MEMBER_PASSWORD))).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("APPLICANT"));
+ }
+ @Test void concurrentApprovalCreatesOneAccountAndOneAudit()throws Exception{
+  Long id=submit(email(),"APPLICANT");long before=users.count();
+  var outcomes=parallel(()->tryApprove(id,loginEmail()),()->tryApprove(id,loginEmail()));
+  assertEquals(1,outcomes.stream().filter(Boolean::booleanValue).count());assertEquals(before+1,users.count());
+  assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action='REGISTRATION_APPROVED' AND entity_type='registration' AND entity_id=?",Long.class,id));
+ }
+ boolean tryApprove(Long id,String login){try{service.approve(id,new RegistrationDtos.Approve(Role.APPLICANT,login,LOGIN_PASSWORD,LOGIN_PASSWORD,true),admin);return true;}catch(ResponseStatusException e){assertEquals(409,e.getStatusCode().value());return false;}}
+ @Test void concurrentApprovalsWithSameLoginEmailCreateOneUser()throws Exception{
+  Long a=submit(email(),"APPLICANT"),b=submit(email(),"APPLICANT");String login=loginEmail();long before=users.count();
+  var outcomes=parallel(()->tryApprove(a,login),()->tryApprove(b,login));
+  assertEquals(1,outcomes.stream().filter(Boolean::booleanValue).count());assertEquals(before+1,users.count());
+ }
+ @Test void adminListingNeverReturnsPasswordHashesAndRequiresAdmin()throws Exception{
+  submit(email(),"APPLICANT");mvc.perform(get("/api/admin/registrations")).andExpect(status().isUnauthorized());mvc.perform(get("/api/admin/registrations").cookie(login(member.email,MEMBER_PASSWORD))).andExpect(status().isForbidden());
+  String body=mvc.perform(get("/api/admin/registrations").cookie(adminToken())).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+  assertFalse(body.contains("registrationPasswordHash"));assertFalse(body.contains("$2a$"));assertFalse(body.contains("$2b$"));assertFalse(body.contains(REG_PASSWORD));
+  String roles=mvc.perform(get("/api/admin/registrations/roles").cookie(adminToken())).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();assertFalse(roles.contains("\"ADMIN\""));
+ }
+ @Test void statusChecksAreRateLimitedPerSourceAndPerEmail()throws Exception{
+  String source=ip();for(int i=0;i<30;i++)mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",email(),"registrationPassword","WrongPass#1"),source)).andExpect(status().isUnauthorized());
+  mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",email(),"registrationPassword","WrongPass#1"),source)).andExpect(status().isTooManyRequests());
+  String target=email();for(int i=0;i<30;i++)mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",target,"registrationPassword","WrongPass#1"),ip())).andExpect(status().isUnauthorized());
+  mvc.perform(postJson("/api/registrations/status",Map.of("personalEmail",target,"registrationPassword","WrongPass#1"),ip())).andExpect(status().isTooManyRequests());
+ }
+ @Test void duplicatePendingRegistrationRejectedAndPublicMutationsNeedCsrf()throws Exception{
+  String e=email();submit(e,"APPLICANT");mvc.perform(postJson("/api/registrations",input(e.toUpperCase(Locale.ROOT),"APPLICANT"),ip())).andExpect(status().isConflict());
+  mvc.perform(post("/api/registrations").contentType("application/json").content(json.writeValueAsString(input(email(),"APPLICANT")))).andExpect(status().isForbidden());
+  mvc.perform(postJson("/api/registrations/activate",Map.of("personalEmail",e),ip())).andExpect(status().is4xxClientError());
+ }
  private <T>List<T> parallel(Callable<T>a,Callable<T>b)throws Exception{ExecutorService pool=Executors.newFixedThreadPool(2);CountDownLatch start=new CountDownLatch(1);try{var first=pool.submit(()->{start.await();return a.call();});var second=pool.submit(()->{start.await();return b.call();});start.countDown();return List.of(first.get(30,TimeUnit.SECONDS),second.get(30,TimeUnit.SECONDS));}finally{pool.shutdownNow();}}
 }
